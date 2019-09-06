@@ -1,1 +1,12 @@
 .git
+.gitattributes
+*.sln
+*.vs
+PSCompiler/PSCompiler/bin
+PSCompiler/PSCompiler/obj
+PSCompiler/PSCompiler/Properties
+*.csproj
+*.config
+VirtualMachine/VirtualMachine/bin
+VirtualMachine/VirtualMachine/obj
+VirtualMachine/VirtualMachine/Properties
