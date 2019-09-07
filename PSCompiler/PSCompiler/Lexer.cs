@@ -12,12 +12,21 @@ namespace PSCompiler
         MINUS,
         GREATER,
         LESS,
+        GREATEREQUAL,
+        LESSEQUAL,
+        EQUAL,
+        NOTEQUAL,
         IF,
         ELSE,
         WHILE,
         DO,
         FOR,
         TO,
+        LBRA,
+        RBRA,
+        LPAR,
+        RPAR,
+        SEMICOLON,
 
         NONE
     }
@@ -120,6 +129,22 @@ namespace PSCompiler
                             break;
                         case '<':
                             token = Token.LESS;
+                            break;
+                        default:
+                        case ';':
+                            token = Token.SEMICOLON;
+                            break;
+                        case '{':
+                            token = Token.LBRA;
+                            break;
+                        case '}':
+                            token = Token.RBRA;
+                            break;
+                        case '(':
+                            token = Token.LPAR;
+                            break;
+                        case ')':
+                            token = Token.RPAR;
                             break;
                         default:
                             throw Lexer.ues;
