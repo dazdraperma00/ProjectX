@@ -1,8 +1,10 @@
-﻿using System;
-
-namespace VirtualMachine
+﻿namespace VirtualMachine
 {
     class Program
     {
+        static void Main(string[] args)
+        {
+
+        }
     }
 }

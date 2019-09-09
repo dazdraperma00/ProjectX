@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PSCompiler
+﻿namespace PSCompiler
 {
     class Program
     {

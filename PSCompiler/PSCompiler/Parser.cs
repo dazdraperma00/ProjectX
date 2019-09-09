@@ -339,6 +339,10 @@ namespace PSCompiler
                 case Token.VAR:
                 case Token.NAME:
                     return CreateVarNode();
+                case Token.LBRA:
+                    return CreateScopedBlockNode();
+                default:
+                    throw new Exception("syntax error");
             }
 
             return null;

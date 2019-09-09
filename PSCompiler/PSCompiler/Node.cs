@@ -1,23 +1,26 @@
-﻿using System;
-
-namespace PSCompiler
+﻿namespace PSCompiler
 {
     class Node
     {
-        public NodeType type;
-        public Node[] operands;
+        private NodeType type;
+        private Node[] operands;
 
         public Node(NodeType _type, params Node[] _operands)
         {
             this.type = _type;
             operands = _operands;
         }
+
+        public NodeType GetNodeType()
+        {
+            return type;
+        }
     }
 
     class VarNode : Node
     {
-        public Variant value;
-        public string varName;
+        private Variant value;
+        private string varName;
 
         public VarNode(NodeType _type, Variant _value, string _name = null, params Node[] _operands)
             :base(_type, _operands)
