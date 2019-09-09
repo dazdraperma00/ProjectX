@@ -16,10 +16,12 @@ namespace PSCompiler
         LET,
         GET,
         EQ,
+        NEQ,
         IF,
         IFELSE,
         WHILE,
         DO,
+        SEQ,
 
         NONE
     }
@@ -33,139 +35,269 @@ namespace PSCompiler
             lexer = new Lexer(_code);
         }
 
-        private Node CreateCompareNode()
+        private Node CreateExpressionNode(Node op1 = null)
         {
-            Token token = lexer.GetToken();
+            NodeType type = NodeType.NONE;
 
-            if (token != Token.LPAR)
+            if (op1 == null)
             {
-                throw new Exception("expected (");
+                op1 = CreateVarNode();
             }
 
-            Node op1 = CreateVarNode();
+            Token token = lexer.GetToken();
 
-            token = lexer.GetToken();
-
-            NodeType nodeType = NodeType.NONE;
-
-            switch(token)
+            switch (token)
             {
-                case Token.EQUAL:
-                    nodeType = NodeType.EQ;
-                    break;
-                case Token.LESS:
-                    nodeType = NodeType.LT;
-                    break;
                 case Token.GREATER:
-                    nodeType = NodeType.GT;
-                    break;
-                case Token.LESSEQUAL:
-                    nodeType = NodeType.LET;
+                    type = NodeType.GT;
                     break;
                 case Token.GREATEREQUAL:
-                    nodeType = NodeType.GET;
+                    type = NodeType.GET;
+                    break;
+                case Token.LESS:
+                    type = NodeType.LT;
+                    break;
+                case Token.LESSEQUAL:
+                    type = NodeType.LET;
+                    break;
+                case Token.EQUAL:
+                    type = NodeType.EQ;
+                    break;
+                case Token.NOTEQUAL:
+                    type = NodeType.NEQ;
                     break;
                 default:
-                    throw new Exception("wrong condition");
+                    throw new Exception("syntax error");
             }
 
             lexer.DetermineNextToken();
 
             Node op2 = CreateVarNode();
 
+            return new Node(type, op1, op2);
+        }
+
+        private Node CreateScopedExpressionNode()
+        {
+            Token token = lexer.GetToken();
+
+            if (token != Token.LPAR)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
             token = lexer.GetToken();
 
-            if (token != Token.RPAR)
+            Node node = CreateExpressionNode();
+
+            while (token != Token.RPAR)
             {
-                throw new Exception("expected )");
+                node = CreateExpressionNode(node);
+
+                token = lexer.GetToken();
             }
 
             lexer.DetermineNextToken();
 
-            return new Node(nodeType, null, op1, op2);
+            return node;
+        }
+
+        private Node CreateScopedBlockNode()
+        {
+            Token token = lexer.GetToken();
+
+            if (token != Token.LBRA)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
+            token = lexer.GetToken();
+
+            Node node = CreateNode();
+
+            while (token != Token.RBRA)
+            {
+                node = new Node(NodeType.SEQ, node, CreateNode());
+            }
+
+            return node;
         }
 
         private Node CreateConditionNode()
         {
-            NodeType type = NodeType.IF;
-            Node op1 = CreateCompareNode();
-            Node op2 = CreateNode();
-            Node op3 = null;
-
             Token token = lexer.GetToken();
+
+            if (token != Token.IF)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
+            token = lexer.GetToken();
+
+            NodeType type = NodeType.IF;
+            Node op1 = CreateScopedExpressionNode();
+            Node op2 = CreateScopedBlockNode();
+            Node op3 = null;
 
             if (token == Token.ELSE)
             {
                 type = NodeType.IFELSE;
-                op3 = CreateNode();
+                op3 = CreateScopedBlockNode();
             }
 
-            lexer.DetermineNextToken();
-
-            return new Node(type, null, op1, op2, op3);
+            return new Node(type, op1, op2, op3);
         }
 
         private Node CreateCycleNode()
         {
             Token token = lexer.GetToken();
+
             Node op1 = null;
             NodeType type = NodeType.NONE;
             
             if (token == Token.WHILE)
             {
                 type = NodeType.WHILE;
-                op1 = CreateCompareNode();
+
+                lexer.DetermineNextToken();
+
+                op1 = CreateScopedExpressionNode();
             }
-            else if (token == Token.FOR)
+            else
             {
-
+                throw new Exception("syntax error");
             }
 
-            Node op2 = CreateNode();
-            return new Node(type, null, op1, op2);
+            Node op2 = CreateScopedBlockNode();
+
+            return new Node(type, op1, op2);
         }
 
         private Node CreateDoNode()
         {
-            Node op1 = CreateNode();
-
             Token token = lexer.GetToken();
 
-            if (token != Token.WHILE)
+            if (token != Token.DO)
             {
-                throw new Exception("expected while statement");
+                throw new Exception("syntax error");
             }
 
             lexer.DetermineNextToken();
 
-            Node op2 = CreateCompareNode();
-            return new Node(NodeType.DO, null, op1, op2);
+            Node op1 = CreateScopedBlockNode();
+
+            token = lexer.GetToken();
+
+            if (token != Token.WHILE)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
+
+            Node op2 = CreateScopedExpressionNode();
+
+            return new Node(NodeType.DO, op1, op2);
+        }
+
+        private Node CreateMathNode(Node op1 = null)
+        {
+            NodeType type = NodeType.NONE;
+
+            if (op1 == null)
+            {
+                op1 = CreateVarNode();
+            }
+
+            Token token = lexer.GetToken();
+
+            switch (token)
+            {
+                case Token.SUM:
+                    type = NodeType.ADD;
+                    break;
+                case Token.SUB:
+                    type = NodeType.SUB;
+                    break;
+                default:
+                    throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
+
+            VarNode op2 = CreateVarNode();
+
+            return new Node(type, null, null, op1, op2);
+        }
+
+        private Node CreateSetNode()
+        {
+            Token token = lexer.GetToken();
+
+            if (token != Token.SET)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
+
+            Node node = CreateVarNode();
+
+            token = lexer.GetToken();
+
+            while (token != Token.SEMICOLON)
+            {
+                node = CreateMathNode(node);
+
+                token = lexer.GetToken();
+            }
+
+            lexer.DetermineNextToken();
+
+            return node;
         }
 
         private VarNode CreateVarNode()
         {
             Token token = lexer.GetToken();
 
-            NodeType type = NodeType.VAR;
-
-            if (token == Token.VAR)
-            {
-                type = NodeType.DECL;
-
-                lexer.DetermineNextToken();
-                token = lexer.GetToken();
-            }
-
+            NodeType type = NodeType.NONE;
             string name = null;
             Variant value = null;
+            Node op1 = null;
 
-            if (token == Token.NAME)
+            if (token == Token.NUM)
             {
+                type = NodeType.CONST;
+                value = new Variant(float.Parse(lexer.GetValue()));
+
+                lexer.DetermineNextToken();
+            }
+            else
+            {
+                if (token == Token.VAR)
+                {
+                    type = NodeType.DECL;
+
+                    lexer.DetermineNextToken();
+                    token = lexer.GetToken();
+                }
+                else if (token == Token.NAME)
+                {
+                    type = NodeType.VAR;
+                }
+                else
+                {
+                    throw new Exception("syntax error");
+                }
+
                 name = lexer.GetValue();
 
                 lexer.DetermineNextToken();
                 token = lexer.GetToken();
-
 
                 if (token == Token.SET)
                 {
@@ -174,32 +306,21 @@ namespace PSCompiler
                         type = NodeType.SET;
                     }
 
-                    lexer.DetermineNextToken();
-                    token = lexer.GetToken();
+                    op1 = CreateSetNode();
+                }
+                else if (token == Token.SEMICOLON)
+                {
+                    value = new Variant(0.0);
 
-                    if (token == Token.NUM)
-                    {
-                        value = new Variant(float.Parse(lexer.GetValue()));
-                    }
-                    else
-                    {
-                        throw new Exception("wrong var initializetion");
-                    }
+                    lexer.DetermineNextToken();
+                }
+                else
+                {
+                    throw new Exception("syntax error");
                 }
             }
-            else if (token == Token.NUM)
-            {
-                type = NodeType.CONST;
-                value = new Variant(float.Parse(lexer.GetValue()));
-            }
-            else
-            {
-                throw new Exception("unexpected expression");
-            }
 
-            lexer.DetermineNextToken();
-
-            return new VarNode(type, value, name);
+            return new VarNode(type, value, name, op1);
         }
 
         private Node CreateNode()

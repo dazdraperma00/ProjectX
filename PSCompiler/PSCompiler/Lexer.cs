@@ -8,8 +8,8 @@ namespace PSCompiler
         VAR,
         NAME,
         SET,
-        PLUS,
-        MINUS,
+        SUM,
+        SUB,
         GREATER,
         LESS,
         GREATEREQUAL,
@@ -18,6 +18,9 @@ namespace PSCompiler
         NOTEQUAL,
         IF,
         ELSE,
+        //OR,
+        //AND,
+        //NOT,
         WHILE,
         DO,
         FOR,
@@ -33,8 +36,6 @@ namespace PSCompiler
 
     class Lexer
     {
-        public static readonly Exception ues = new Exception("Unexpected symbol");
-
         private readonly string code;
         private Token token;
         private string value;
@@ -116,10 +117,10 @@ namespace PSCompiler
                     switch(code[i])
                     {
                         case '+':
-                            token = Token.PLUS;
+                            token = Token.SUM;
                             break;
                         case '-':
-                            token = Token.MINUS;
+                            token = Token.SUB;
                             break;
                         case '=':
                             token = Token.SET;
@@ -130,7 +131,6 @@ namespace PSCompiler
                         case '<':
                             token = Token.LESS;
                             break;
-                        default:
                         case ';':
                             token = Token.SEMICOLON;
                             break;
@@ -147,7 +147,7 @@ namespace PSCompiler
                             token = Token.RPAR;
                             break;
                         default:
-                            throw Lexer.ues;
+                            throw new Exception("unexpected symbol");
                     }
                 }
             }
