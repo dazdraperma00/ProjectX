@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace PSCompiler
 {
@@ -13,6 +14,11 @@ namespace PSCompiler
         public Variant(double _value = 0.0)
         {
             this.value = _value;
+        }
+
+        public byte[] ToBytes()
+        {
+            return BitConverter.GetBytes(value);
         }
 
         public static Variant operator +(Variant op1, Variant op2)

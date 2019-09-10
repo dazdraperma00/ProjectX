@@ -27,7 +27,7 @@ namespace VirtualMachine
         private readonly byte[] program;
         private readonly uint size;
         private Stack<Variant> stack = new Stack<Variant>();
-        //private Dictionary<uint, Variant> vars = new Dictionary<uint, Variant>();
+        private Dictionary<int, Variant> vars = new Dictionary<int, Variant>();
 
         public VirtualMachine(byte[] _program, uint _size)
         {
@@ -49,12 +49,33 @@ namespace VirtualMachine
             }
         }
 
+        private int GetVarId(ref uint pos)
+        {
+            if (pos + sizeof(int) < size)
+            {
+                int id = BitConverter.ToInt32(program, (int)pos);
+                pos += sizeof(int);
+                return id;
+            }
+            else
+            {
+                throw new Exception("stack overflow");
+            }
+        }
+
         private void JmpToMark(ref uint pos)
         {
-            uint mark = BitConverter.ToUInt32(program, (int)pos);
-            if (mark < size)
+            if (pos + sizeof(uint) < size)
             {
-                pos = mark;
+                uint mark = BitConverter.ToUInt32(program, (int)pos);
+                if (mark < size)
+                {
+                    pos = mark;
+                }
+            }
+            else
+            {
+                throw new Exception("stack overflow");
             }
         }
 
@@ -66,14 +87,13 @@ namespace VirtualMachine
                 {
                     case ByteCommand.FETCH:
                         {
-                            Variant var = GetVar(ref i);
-                            stack.Push(var);
-                            //vars.Add(var);
+                            stack.Push(vars[GetVarId(ref i)]);
                             break;
                         }
                     case ByteCommand.STORE:
-                        { 
-                            //vars.Add(stack.Pop());
+                        {
+                            Variant var = stack.Pop();
+                            vars.Add(GetVarId(ref i), var);
                             break;
                         }
                     case ByteCommand.PUSH:

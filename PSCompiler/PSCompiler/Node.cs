@@ -15,6 +15,11 @@
         {
             return type;
         }
+
+        public Node GetOperand(ushort i)
+        {
+            return operands[i];
+        }
     }
 
     class VarNode : Node
@@ -27,6 +32,16 @@
         {
             value = _value;
             varName = _name;
+        }
+
+        public Variant GetValue()
+        {
+            return value;
+        }
+
+        public string GetName()
+        {
+            return varName;
         }
     }
 }
