@@ -21,6 +21,13 @@ namespace PSCompiler
             return BitConverter.GetBytes(value);
         }
 
+        public override string ToString()
+        {
+            string str = "";
+            str += value.ToString();
+            return str;
+        }
+
         public static Variant operator +(Variant op1, Variant op2)
         {
             return new Variant(op1.value + op2.value);

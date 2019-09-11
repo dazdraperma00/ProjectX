@@ -10,3 +10,4 @@ PSCompiler/PSCompiler/Properties
 VirtualMachine/VirtualMachine/bin
 VirtualMachine/VirtualMachine/obj
 VirtualMachine/VirtualMachine/Properties
+*.user

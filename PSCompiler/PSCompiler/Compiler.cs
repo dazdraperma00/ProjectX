@@ -9,9 +9,9 @@ namespace PSCompiler
         private List<byte> byteCode = new List<byte>();
         private uint pc = 0;
         
-        public List<byte> GetByteCode()
+        public byte[] GetByteCode()
         {
-            return byteCode;
+            return byteCode.ToArray();
         }
 
         private void Gen(ByteCommand command)
@@ -66,7 +66,7 @@ namespace PSCompiler
             }
         }
 
-        private void Compile(Node node)
+        public void Compile(Node node)
         {
             switch(node.GetNodeType())
             {

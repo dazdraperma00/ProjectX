@@ -36,6 +36,19 @@ namespace VirtualMachine
             size = _size;
         }
 
+        public Variant[] GetStackContent()
+        {
+            int size = stack.Count;
+            Variant[] cont = new Variant[size];
+
+            for (int i = 0; i < size; ++i)
+            {
+                cont[i] = stack.Pop();
+            }
+
+            return cont;
+        }
+
         private Variant GetVar(ref uint pos)
         {
             if (pos + Variant.size < size)
