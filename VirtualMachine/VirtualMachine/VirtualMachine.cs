@@ -14,6 +14,7 @@ namespace VirtualMachine
         SUB,
         LT,
         GT,
+        EQ,
         JZ,
         JNZ,
         JMP,
@@ -133,6 +134,14 @@ namespace VirtualMachine
                             Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
                             Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
+                            stack.Push(res);
+                            break;
+                        }
+                    case ByteCommand.EQ:
+                        {
+                            Variant op1 = stack.Pop();
+                            Variant op2 = stack.Pop();
+                            Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
                             stack.Push(res);
                             break;
                         }
