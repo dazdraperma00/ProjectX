@@ -84,8 +84,7 @@ namespace PSCompiler
                     }
                 case NodeType.DECL:
                     {
-                        Gen(ByteCommand.PUSH);
-                        Gen(((VarNode)node).GetValue());
+                        Compile(node.GetOperand(0));
                         Gen(ByteCommand.STORE);
                         Gen(((VarNode)node).GetName());
                         break;
@@ -144,19 +143,19 @@ namespace PSCompiler
                     {
                         Compile(node.GetOperand(0));
                         Gen(ByteCommand.JZ);
-                        uint pos = pc;
+                        uint pos1 = pc;
                         uint mark1 = 0;
                         Gen(mark1);
                         Compile(node.GetOperand(1));
                         Gen(ByteCommand.JMP);
-                        mark1 = pc;
-                        Gen(mark1, pos);
                         uint mark2 = 0;
-                        pos = pc;
+                        uint pos2 = pc;
                         Gen(mark2);
+                        mark1 = pc;
+                        Gen(mark1, pos1);
                         Compile(node.GetOperand(2));
                         mark2 = pc;
-                        Gen(mark2, pos);
+                        Gen(mark2, pos2);
                         break;
                     }
                 case NodeType.EQ:

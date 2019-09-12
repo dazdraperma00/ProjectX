@@ -91,6 +91,8 @@ namespace PSCompiler
 
             Node node = CreateExpressionNode();
 
+            token = lexer.GetToken();
+
             while (token != Token.RPAR)
             {
                 node = CreateExpressionNode(node);
@@ -113,14 +115,19 @@ namespace PSCompiler
             }
 
             lexer.DetermineNextToken();
-            token = lexer.GetToken();
 
             Node node = CreateNode();
+
+            token = lexer.GetToken();
 
             while (token != Token.RBRA)
             {
                 node = new Node(NodeType.SEQ, node, CreateNode());
+
+                token = lexer.GetToken();
             }
+
+            lexer.DetermineNextToken();
 
             return node;
         }
@@ -135,15 +142,18 @@ namespace PSCompiler
             }
 
             lexer.DetermineNextToken();
-            token = lexer.GetToken();
 
             NodeType type = NodeType.IF;
             Node op1 = CreateScopedExpressionNode();
             Node op2 = CreateScopedBlockNode();
             Node op3 = null;
 
+            token = lexer.GetToken();
+
             if (token == Token.ELSE)
             {
+                lexer.DetermineNextToken();
+
                 type = NodeType.IFELSE;
                 op3 = CreateScopedBlockNode();
             }
@@ -230,7 +240,7 @@ namespace PSCompiler
 
             VarNode op2 = CreateVarNode();
 
-            return new Node(type, null, null, op1, op2);
+            return new Node(type, op1, op2);
         }
 
         private Node CreateSetNode()
@@ -283,7 +293,6 @@ namespace PSCompiler
                     type = NodeType.DECL;
 
                     lexer.DetermineNextToken();
-                    token = lexer.GetToken();
                 }
                 else if (token == Token.NAME)
                 {
@@ -308,15 +317,11 @@ namespace PSCompiler
 
                     op1 = CreateSetNode();
                 }
-                else if (token == Token.SEMICOLON)
+                else if (type == NodeType.DECL && token == Token.SEMICOLON)
                 {
-                    value = new Variant(0.0);
+                    op1 = new VarNode(NodeType.CONST, new Variant(0.0));
 
                     lexer.DetermineNextToken();
-                }
-                else
-                {
-                    throw new Exception("syntax error");
                 }
             }
 
@@ -326,7 +331,6 @@ namespace PSCompiler
         private Node CreateNode()
         {
             Token token = lexer.GetToken();
-            lexer.DetermineNextToken();
 
             switch (token)
             {
@@ -352,7 +356,7 @@ namespace PSCompiler
         {
             lexer.DetermineNextToken();
 
-            Node head = new Node(NodeType.PROGRAM, null, CreateNode());
+            Node head = new Node(NodeType.PROGRAM, CreateNode(), null);
             return head;
         }
     }

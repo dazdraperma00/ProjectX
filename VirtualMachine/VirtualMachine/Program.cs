@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 using PSCompiler;
 
 namespace VirtualMachine
@@ -29,10 +30,10 @@ namespace VirtualMachine
                     VirtualMachine vm = new VirtualMachine(code, (uint)code.Length);
                     vm.Run();
 
-                    Variant[] stackCont = vm.GetStackContent();
-                    for (int i = 0; i < stackCont.Length; ++i)
+                    Dictionary<int, Variant> stackVars = vm.GetStackVars();
+                    foreach (KeyValuePair<int, Variant> var in stackVars)
                     {
-                        Console.Write(stackCont[i].ToString() + " ");
+                        Console.WriteLine(var.Key + ": " + var.Value);
                     }
                 }
             }

@@ -7,6 +7,11 @@ namespace PSCompiler
     public class Variant
     {
         public static readonly ushort size = 8;
+        
+        public static Variant FromBytes(byte[] bytes, uint pos)
+        {
+            return new Variant(BitConverter.ToDouble(bytes, (int)pos));
+        }
 
         [FieldOffset(0)]
         private double value;

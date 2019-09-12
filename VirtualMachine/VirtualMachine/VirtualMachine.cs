@@ -49,11 +49,16 @@ namespace VirtualMachine
             return cont;
         }
 
+        public Dictionary<int, Variant> GetStackVars()
+        {
+            return vars;
+        }
+
         private Variant GetVar(ref uint pos)
         {
             if (pos + Variant.size < size)
             {
-                Variant arg = new Variant(BitConverter.ToDouble(program, (int)pos));
+                Variant arg = Variant.FromBytes(program, pos);
                 pos += Variant.size;
                 return arg;
             }
@@ -95,9 +100,9 @@ namespace VirtualMachine
 
         public void Run()
         {
-            for (uint i = 0; i < size; ++i)
+            for (uint i = 0; i < size;)
             {
-                switch((ByteCommand)program[i])
+                switch((ByteCommand)program[i++])
                 {
                     case ByteCommand.FETCH:
                         {
@@ -107,7 +112,7 @@ namespace VirtualMachine
                     case ByteCommand.STORE:
                         {
                             Variant var = stack.Pop();
-                            vars.Add(GetVarId(ref i), var);
+                            vars[GetVarId(ref i)] = var;
                             break;
                         }
                     case ByteCommand.PUSH:
@@ -122,38 +127,38 @@ namespace VirtualMachine
                         }
                     case ByteCommand.ADD:
                         {
-                            Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
                             stack.Push(op1 + op2);
                             break;
                         }
                     case ByteCommand.SUB:
                         {
-                            Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
                             stack.Push(op1 - op2);
                             break;
                         }
                     case ByteCommand.LT:
                         {
-                            Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
                             Variant res = new Variant(op1 < op2 ? 1.0 : 0.0);
                             stack.Push(res);
                             break;
                         }
                     case ByteCommand.GT:
                         {
-                            Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
                             Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
                             stack.Push(res);
                             break;
                         }
                     case ByteCommand.EQ:
                         {
-                            Variant op1 = stack.Pop();
                             Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
                             Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
                             stack.Push(res);
                             break;
@@ -164,6 +169,10 @@ namespace VirtualMachine
                             {
                                 JmpToMark(ref i);
                             }
+                            else
+                            {
+                                i += sizeof(uint);
+                            }
                             break;
                         }
                     case ByteCommand.JNZ:
@@ -171,6 +180,10 @@ namespace VirtualMachine
                             if (stack.Pop() != (Variant)(0.0))
                             {
                                 JmpToMark(ref i);
+                            }
+                            else
+                            {
+                                i += sizeof(uint);
                             }
                             break;
                         }

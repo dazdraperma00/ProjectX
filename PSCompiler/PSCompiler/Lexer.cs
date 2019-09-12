@@ -37,51 +37,64 @@ namespace PSCompiler
     class Lexer
     {
         private readonly string code;
+        private int counter;
+
         private Token token;
         private string value;
 
         public Lexer(string _code = "")
         {
             this.code = _code;
+            this.counter = 0;
+        }
+
+        private bool IsSeparator(char c)
+        {
+            return (c == '\n' || c == '\r' || c == '\t' || c == ' ');
         }
 
         public void DetermineNextToken()
         {
-            this.token = Token.NONE;
-            this.value = "";
+            token = Token.NONE;
+            value = "";
 
-            for (int i = 0; i < code.Length; ++i)
+            for (; token == Token.NONE;)
             {
-                if (Char.IsSeparator(code[i]))
+                if (counter == code.Length)
                 {
+                    return;
+                }
+                if (IsSeparator(code[counter]))
+                {
+                    ++counter;
                     continue;
                 }
-                else if (Char.IsDigit(code[i]))
+                else if (Char.IsDigit(code[counter]))
                 {
                     token = Token.NUM;
 
-                    while (Char.IsDigit(code[i]))
+                    while (Char.IsDigit(code[counter]))
                     {
-                        value += code[i++];
+                        value += code[counter++];
                     }
 
-                    if (code[i] == '.')
+                    if (code[counter] == '.')
                     {
-                        value += code[i++];
+                        value += code[counter++];
 
-                        while (Char.IsDigit(code[i]))
+                        while (Char.IsDigit(code[counter]))
                         {
-                            value += code[i++];
+                            value += code[counter++];
                         }
                     }
                 }
-                else if (Char.IsLetter(code[i]))
+                else if (Char.IsLetter(code[counter]))
                 {
                     string word = "";
 
-                    while (Char.IsLetterOrDigit(code[i]))
+                    while (Char.IsLetterOrDigit(code[counter]))
                     {
-                        word += code[i++];
+                        word += code[counter++];
                     }
 
                     switch(word)
@@ -109,12 +122,13 @@ namespace PSCompiler
                             break;
                         default:
                             token = Token.NAME;
+                            value = word;
                             break;
                     }
                 }
                 else
                 {
-                    switch(code[i])
+                    switch(code[counter++])
                     {
                         case '+':
                             token = Token.SUM;
