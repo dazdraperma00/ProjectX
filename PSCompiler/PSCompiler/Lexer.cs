@@ -18,9 +18,9 @@ namespace PSCompiler
         NOTEQUAL,
         IF,
         ELSE,
-        //OR,
-        //AND,
-        //NOT,
+        OR,
+        AND,
+        NOT,
         WHILE,
         DO,
         FOR,
@@ -137,13 +137,54 @@ namespace PSCompiler
                             token = Token.SUB;
                             break;
                         case '=':
-                            token = Token.SET;
+                            if (code[counter] == '=')
+                            {
+                                token = Token.EQUAL;
+                                ++counter;
+                            }
+                            else
+                            {
+                                token = Token.SET;
+                            }
                             break;
                         case '>':
-                            token = Token.GREATER;
+                            if (code[counter] == '=')
+                            {
+                                token = Token.GREATEREQUAL;
+                                ++counter;
+                            }
+                            else
+                            {
+                                token = Token.GREATER;
+                            }
                             break;
                         case '<':
-                            token = Token.LESS;
+                            if (code[counter] == '=')
+                            {
+                                token = Token.LESSEQUAL;
+                                ++counter;
+                            }
+                            else
+                            {
+                                token = Token.LESS;
+                            }
+                            break;
+                        case '!':
+                            if (code[counter] == '=')
+                            {
+                                token = Token.NOTEQUAL;
+                                ++counter;
+                            }
+                            else
+                            {
+                                token = Token.NOT;
+                            }
+                            break;
+                        case '&':
+                            token = Token.AND;
+                            break;
+                        case '|':
+                            token = Token.OR;
                             break;
                         case ';':
                             token = Token.SEMICOLON;
