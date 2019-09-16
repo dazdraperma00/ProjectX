@@ -17,6 +17,8 @@ namespace PSCompiler
         GET,
         EQ,
         NEQ,
+        OR,
+        AND,
         IF,
         IFELSE,
         WHILE,
@@ -65,6 +67,18 @@ namespace PSCompiler
                     break;
                 case Token.NOTEQUAL:
                     type = NodeType.NEQ;
+                    break;
+                case Token.OR:
+                    type = NodeType.OR;
+                    break;
+                case Token.AND:
+                    type = NodeType.AND;
+                    break;
+                case Token.SUB:
+                    type = NodeType.SUB;
+                    break;
+                case Token.SUM:
+                    type = NodeType.ADD;
                     break;
                 default:
                     throw new Exception("syntax error");
@@ -213,36 +227,6 @@ namespace PSCompiler
             return new Node(NodeType.DO, op1, op2);
         }
 
-        private Node CreateMathNode(Node op1 = null)
-        {
-            NodeType type = NodeType.NONE;
-
-            if (op1 == null)
-            {
-                op1 = CreateVarNode();
-            }
-
-            Token token = lexer.GetToken();
-
-            switch (token)
-            {
-                case Token.SUM:
-                    type = NodeType.ADD;
-                    break;
-                case Token.SUB:
-                    type = NodeType.SUB;
-                    break;
-                default:
-                    throw new Exception("syntax error");
-            }
-
-            lexer.DetermineNextToken();
-
-            VarNode op2 = CreateVarNode();
-
-            return new Node(type, op1, op2);
-        }
-
         private Node CreateSetNode()
         {
             Token token = lexer.GetToken();
@@ -260,7 +244,7 @@ namespace PSCompiler
 
             while (token != Token.SEMICOLON)
             {
-                node = CreateMathNode(node);
+                node = CreateExpressionNode(node);
 
                 token = lexer.GetToken();
             }
