@@ -175,29 +175,21 @@ namespace PSCompiler
             return new Node(type, op1, op2, op3);
         }
 
-        private Node CreateCycleNode()
+        private Node CreateWhileNode()
         {
             Token token = lexer.GetToken();
 
-            Node op1 = null;
-            NodeType type = NodeType.NONE;
-            
-            if (token == Token.WHILE)
-            {
-                type = NodeType.WHILE;
-
-                lexer.DetermineNextToken();
-
-                op1 = CreateScopedExpressionNode();
-            }
-            else
+            if (token != Token.WHILE)
             {
                 throw new Exception("syntax error");
             }
 
+            lexer.DetermineNextToken();
+
+            Node op1 = CreateScopedExpressionNode();
             Node op2 = CreateScopedBlockNode();
 
-            return new Node(type, op1, op2);
+            return new Node(NodeType.WHILE, op1, op2);
         }
 
         private Node CreateDoNode()
@@ -225,6 +217,18 @@ namespace PSCompiler
             Node op2 = CreateScopedExpressionNode();
 
             return new Node(NodeType.DO, op1, op2);
+        }
+
+        private Node CreateForNode()
+        {
+            Token token = lexer.GetToken();
+
+            if (token != Token.FOR)
+            {
+                throw new Exception("syntax error");
+            }
+
+            lexer.DetermineNextToken();
         }
 
         private Node CreateSetNode()
@@ -321,9 +325,11 @@ namespace PSCompiler
                 case Token.IF:
                     return CreateConditionNode();
                 case Token.WHILE:
-                    return CreateCycleNode();
+                    return CreateWhileNode();
                 case Token.DO:
                     return CreateDoNode();
+                case Token.FOR:
+                    return CreateForNode();
                 case Token.VAR:
                 case Token.NAME:
                     return CreateVarNode();
