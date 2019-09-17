@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace PSCompiler
+namespace VirtualMachine
 {
     [StructLayout(LayoutKind.Explicit, Size = 8)]
     public class Variant
@@ -49,6 +49,16 @@ namespace PSCompiler
         }
 
         public static bool operator <(Variant op1, Variant op2)
+        {
+            return op1.value < op2.value;
+        }
+
+        public static bool operator >=(Variant op1, Variant op2)
+        {
+            return op1.value >= op2.value;
+        }
+
+        public static bool operator <=(Variant op1, Variant op2)
         {
             return op1.value < op2.value;
         }

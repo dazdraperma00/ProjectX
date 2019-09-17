@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using PSCompiler;
 
 namespace VirtualMachine
 {
     public enum ByteCommand : byte
     {
         FETCH,
-        STORE,
         PUSH,
         POP,
         ADD,
         SUB,
         LT,
         GT,
+        LET,
+        GET,
         EQ,
+        NEQ,
         JZ,
         JNZ,
         JMP,
@@ -26,37 +26,17 @@ namespace VirtualMachine
     class VirtualMachine
     {
         private readonly byte[] program;
-        private readonly uint size;
-        private Stack<Variant> stack = new Stack<Variant>();
-        private Dictionary<int, Variant> vars = new Dictionary<int, Variant>();
 
-        public VirtualMachine(byte[] _program, uint _size)
+        private Stack stack = new Stack();
+
+        public VirtualMachine(byte[] _program)
         {
             program = _program;
-            size = _size;
-        }
-
-        public Variant[] GetStackContent()
-        {
-            int size = stack.Count;
-            Variant[] cont = new Variant[size];
-
-            for (int i = 0; i < size; ++i)
-            {
-                cont[i] = stack.Pop();
-            }
-
-            return cont;
-        }
-
-        public Dictionary<int, Variant> GetStackVars()
-        {
-            return vars;
         }
 
         private Variant GetVar(ref uint pos)
         {
-            if (pos + Variant.size < size)
+            if (pos + Variant.size < program.Length)
             {
                 Variant arg = Variant.FromBytes(program, pos);
                 pos += Variant.size;
@@ -64,55 +44,49 @@ namespace VirtualMachine
             }
             else
             {
-                throw new Exception("stack overflow");
+                throw new Exception("variant operand corrapted");
             }
         }
 
-        private int GetVarId(ref uint pos)
+        private uint GetVarId(ref uint pos)
         {
-            if (pos + sizeof(int) < size)
+            if (pos + sizeof(uint) < program.Length)
             {
-                int id = BitConverter.ToInt32(program, (int)pos);
-                pos += sizeof(int);
+                uint id = BitConverter.ToUInt32(program, (int)pos);
+                pos += sizeof(uint);
                 return id;
             }
             else
             {
-                throw new Exception("stack overflow");
+                throw new Exception("offset operand corrapted");
             }
         }
 
         private void JmpToMark(ref uint pos)
         {
-            if (pos + sizeof(uint) < size)
+            if (pos + sizeof(uint) < program.Length)
             {
                 uint mark = BitConverter.ToUInt32(program, (int)pos);
-                if (mark < size)
+                if (mark < program.Length)
                 {
                     pos = mark;
                 }
             }
             else
             {
-                throw new Exception("stack overflow");
+                throw new Exception("nonexistent mark");
             }
         }
 
         public void Run()
         {
-            for (uint i = 0; i < size;)
+            for (uint i = 0; i < program.Length;)
             {
                 switch((ByteCommand)program[i++])
                 {
                     case ByteCommand.FETCH:
                         {
-                            stack.Push(vars[GetVarId(ref i)]);
-                            break;
-                        }
-                    case ByteCommand.STORE:
-                        {
-                            Variant var = stack.Pop();
-                            vars[GetVarId(ref i)] = var;
+                            stack.Pick(GetVarId(ref i));
                             break;
                         }
                     case ByteCommand.PUSH:
@@ -155,6 +129,22 @@ namespace VirtualMachine
                             stack.Push(res);
                             break;
                         }
+                    case ByteCommand.LET:
+                        {
+                            Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
+                            Variant res = new Variant(op1 <= op2 ? 1.0 : 0.0);
+                            stack.Push(res);
+                            break;
+                        }
+                    case ByteCommand.GET:
+                        {
+                            Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
+                            Variant res = new Variant(op1 >= op2 ? 1.0 : 0.0);
+                            stack.Push(res);
+                            break;
+                        }
                     case ByteCommand.EQ:
                         {
                             Variant op2 = stack.Pop();
@@ -163,9 +153,17 @@ namespace VirtualMachine
                             stack.Push(res);
                             break;
                         }
+                    case ByteCommand.NEQ:
+                        {
+                            Variant op2 = stack.Pop();
+                            Variant op1 = stack.Pop();
+                            Variant res = new Variant(op1 != op2 ? 1.0 : 0.0);
+                            stack.Push(res);
+                            break;
+                        }
                     case ByteCommand.JZ:
                         {
-                            if (stack.Pop() == (Variant)(0.0))
+                            if (stack.Pop() == 0.0)
                             {
                                 JmpToMark(ref i);
                             }
@@ -177,7 +175,7 @@ namespace VirtualMachine
                         }
                     case ByteCommand.JNZ:
                         {
-                            if (stack.Pop() != (Variant)(0.0))
+                            if (stack.Pop() != 0.0)
                             {
                                 JmpToMark(ref i);
                             }
