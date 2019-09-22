@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using PSCompiler;
 
 namespace VirtualMachine
 {
@@ -27,14 +26,13 @@ namespace VirtualMachine
                     byte[] code = new byte[fstream.Length];
                     fstream.Read(code, 0, code.Length);
 
-                    VirtualMachine vm = new VirtualMachine(code, (uint)code.Length);
-                    vm.Run();
+                    Decoder decoder = new Decoder();
+                    decoder.LoadCode(code);
+                    Command[] program = decoder.Decode();
 
-                    Dictionary<int, Variant> stackVars = vm.GetStackVars();
-                    foreach (KeyValuePair<int, Variant> var in stackVars)
-                    {
-                        Console.WriteLine(var.Key + ": " + var.Value);
-                    }
+                    VirtualMachine vm = new VirtualMachine();
+                    vm.LoadProgram(program);
+                    vm.Run();
                 }
             }
             catch(Exception e)

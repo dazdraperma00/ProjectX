@@ -33,6 +33,11 @@ namespace VirtualMachine
             return str;
         }
 
+        public static Variant Parse(string str)
+        {
+            return new Variant(double.Parse(str));
+        }
+
         public static Variant operator +(Variant op1, Variant op2)
         {
             return new Variant(op1.value + op2.value);
@@ -76,6 +81,16 @@ namespace VirtualMachine
         public static implicit operator Variant(double var)
         {
             return new Variant(var);
+        }
+
+        public static implicit operator double(Variant var)
+        {
+            return var.value;
+        }
+
+        public static implicit operator uint(Variant var)
+        {
+            return (uint)(var.value);
         }
     }
 }

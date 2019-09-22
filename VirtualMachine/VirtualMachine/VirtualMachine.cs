@@ -5,6 +5,7 @@ namespace VirtualMachine
     public enum ByteCommand : byte
     {
         FETCH,
+        STORE,
         PUSH,
         POP,
         ADD,
@@ -22,76 +23,53 @@ namespace VirtualMachine
 
         NONE
     }
+    public enum State : byte
+    {
+        RUNNING,
+        HALTED,
+        BROKEN,
+    }
 
     class VirtualMachine
     {
-        private readonly byte[] program;
+        private Command[] program;
+        private uint pc = 0;
 
         private Stack stack = new Stack();
 
-        public VirtualMachine(byte[] _program)
+        private State state = State.HALTED;
+
+        public void LoadProgram(Command[] _program)
         {
             program = _program;
         }
 
-        private Variant GetVar(ref uint pos)
+        public State GetState()
         {
-            if (pos + Variant.size < program.Length)
-            {
-                Variant arg = Variant.FromBytes(program, pos);
-                pos += Variant.size;
-                return arg;
-            }
-            else
-            {
-                throw new Exception("variant operand corrapted");
-            }
-        }
-
-        private uint GetVarId(ref uint pos)
-        {
-            if (pos + sizeof(uint) < program.Length)
-            {
-                uint id = BitConverter.ToUInt32(program, (int)pos);
-                pos += sizeof(uint);
-                return id;
-            }
-            else
-            {
-                throw new Exception("offset operand corrapted");
-            }
-        }
-
-        private void JmpToMark(ref uint pos)
-        {
-            if (pos + sizeof(uint) < program.Length)
-            {
-                uint mark = BitConverter.ToUInt32(program, (int)pos);
-                if (mark < program.Length)
-                {
-                    pos = mark;
-                }
-            }
-            else
-            {
-                throw new Exception("nonexistent mark");
-            }
+            return state;
         }
 
         public void Run()
         {
-            for (uint i = 0; i < program.Length;)
+            state = State.RUNNING;
+
+            while (true)
             {
-                switch((ByteCommand)program[i++])
+                switch((ByteCommand)program[pc].command)
                 {
                     case ByteCommand.FETCH:
                         {
-                            stack.Pick(GetVarId(ref i));
+                            stack.Pick(program[pc].oper);
+                            break;
+                        }
+                    case ByteCommand.STORE:
+                        {
+                            stack.Set(program[pc].oper, stack.Pop());
                             break;
                         }
                     case ByteCommand.PUSH:
                         {
-                            stack.Push(GetVar(ref i));
+                            stack.Push(program[pc].oper);
                             break;
                         }
                     case ByteCommand.POP:
@@ -165,11 +143,7 @@ namespace VirtualMachine
                         {
                             if (stack.Pop() == 0.0)
                             {
-                                JmpToMark(ref i);
-                            }
-                            else
-                            {
-                                i += sizeof(uint);
+                                pc += program[pc].oper - 1;
                             }
                             break;
                         }
@@ -177,26 +151,32 @@ namespace VirtualMachine
                         {
                             if (stack.Pop() != 0.0)
                             {
-                                JmpToMark(ref i);
-                            }
-                            else
-                            {
-                                i += sizeof(uint);
+                                pc += program[pc].oper - 1;
                             }
                             break;
                         }
                     case ByteCommand.JMP:
                         {
-                            JmpToMark(ref i);
+                            pc += program[pc].oper - 1;
+                            break;
+                        }
+                    case ByteCommand.NONE:
+                        {
                             break;
                         }
                     case ByteCommand.HALT:
                         {
+                            state = State.HALTED;
                             return;
                         }
                     default:
-                        throw new Exception("byte error");
+                        {
+                            state = State.BROKEN;
+                            return;
+                        }
                 }
+
+                ++pc;
             }
         }
     }

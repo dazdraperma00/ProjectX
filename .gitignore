@@ -11,3 +11,6 @@ VirtualMachine/VirtualMachine/bin
 VirtualMachine/VirtualMachine/obj
 VirtualMachine/VirtualMachine/Properties
 *.user
+VirtualMachine/Environment/ExampleGenerator/ExampleGenerator/bin
+VirtualMachine/Environment/ExampleGenerator/ExampleGenerator/obj
+VirtualMachine/Environment/ExampleGenerator/ExampleGenerator/Properties

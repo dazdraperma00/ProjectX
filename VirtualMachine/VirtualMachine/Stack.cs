@@ -32,5 +32,22 @@ namespace VirtualMachine
                 throw sof;
             }
         }
+
+        public void Set(uint offset, Variant var)
+        {
+            if (offset < stack.Count)
+            {
+                stack[(int)offset] = var;
+            }
+            else
+            {
+                throw sof;
+            }
+        }
+
+        public int GetStackPointer()
+        {
+            return stack.Count - 1;
+        }
     }
 }

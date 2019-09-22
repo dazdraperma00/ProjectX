@@ -1,4 +1,6 @@
-﻿namespace PSCompiler
+﻿using VirtualMachine;
+
+namespace PSCompiler
 {
     class Node
     {
