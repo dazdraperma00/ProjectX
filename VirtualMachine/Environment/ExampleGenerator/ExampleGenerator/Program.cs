@@ -9,10 +9,21 @@ namespace ExampleGenerator
     {
         private static List<byte> byteCode = new List<byte>();
 
-        private static void AddOperand(string op)
+        private static void AddVar(string op)
         {
             Variant var = Variant.Parse(op);
             byte[] bytes = var.ToBytes();
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                byteCode.Add(bytes[i]);
+            }
+        }
+
+        private static void AddOffset(string op)
+        {
+            int offset = int.Parse(op);
+            byte[] bytes = BitConverter.GetBytes(offset);
 
             for (int i = 0; i < bytes.Length; ++i)
             {
@@ -36,15 +47,15 @@ namespace ExampleGenerator
                 {
                     case "FETCH":
                         byteCode.Add((byte)ByteCommand.FETCH);
-                        AddOperand(words[i++]);
+                        AddOffset(words[i++]);
                         break;
                     case "STORE":
                         byteCode.Add((byte)ByteCommand.STORE);
-                        AddOperand(words[i++]);
+                        AddOffset(words[i++]);
                         break;
                     case "PUSH":
                         byteCode.Add((byte)ByteCommand.PUSH);
-                        AddOperand(words[i++]);
+                        AddVar(words[i++]);
                         break;
                     case "POP":
                         byteCode.Add((byte)ByteCommand.POP);
@@ -75,15 +86,15 @@ namespace ExampleGenerator
                         break;
                     case "JZ":
                         byteCode.Add((byte)ByteCommand.JZ);
-                        AddOperand(words[i++]);
+                        AddOffset(words[i++]);
                         break;
                     case "JNZ":
                         byteCode.Add((byte)ByteCommand.JNZ);
-                        AddOperand(words[i++]);
+                        AddOffset(words[i++]);
                         break;
                     case "JMP":
                         byteCode.Add((byte)ByteCommand.JMP);
-                        AddOperand(words[i++]);
+                        AddOffset(words[i++]);
                         break;
                     case "HALT":
                         byteCode.Add((byte)ByteCommand.HALT);

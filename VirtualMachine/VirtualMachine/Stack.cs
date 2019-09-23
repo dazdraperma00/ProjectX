@@ -21,7 +21,7 @@ namespace VirtualMachine
             return var;
         }
 
-        public void Pick(uint offset)
+        public void Pick(int offset)
         {
             if (offset < stack.Count)
             {
@@ -33,7 +33,7 @@ namespace VirtualMachine
             }
         }
 
-        public void Set(uint offset, Variant var)
+        public void Set(int offset, Variant var)
         {
             if (offset < stack.Count)
             {
@@ -48,6 +48,11 @@ namespace VirtualMachine
         public int GetStackPointer()
         {
             return stack.Count - 1;
+        }
+
+        public Variant[] ToArray()
+        {
+            return stack.ToArray();
         }
     }
 }

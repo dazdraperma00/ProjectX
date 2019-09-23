@@ -33,7 +33,7 @@ namespace VirtualMachine
     class VirtualMachine
     {
         private Command[] program;
-        private uint pc = 0;
+        private int pc = 0;
 
         private Stack stack = new Stack();
 
@@ -49,6 +49,11 @@ namespace VirtualMachine
             return state;
         }
 
+        public Stack GetStack()
+        {
+            return stack;
+        }
+
         public void Run()
         {
             state = State.RUNNING;
@@ -59,17 +64,17 @@ namespace VirtualMachine
                 {
                     case ByteCommand.FETCH:
                         {
-                            stack.Pick(program[pc].oper);
+                            stack.Pick(((OffsetCommand)program[pc]).offset);
                             break;
                         }
                     case ByteCommand.STORE:
                         {
-                            stack.Set(program[pc].oper, stack.Pop());
+                            stack.Set(((OffsetCommand)program[pc]).offset, stack.Pop());
                             break;
                         }
                     case ByteCommand.PUSH:
                         {
-                            stack.Push(program[pc].oper);
+                            stack.Push(((VarCommand)program[pc]).var);
                             break;
                         }
                     case ByteCommand.POP:
@@ -143,7 +148,7 @@ namespace VirtualMachine
                         {
                             if (stack.Pop() == 0.0)
                             {
-                                pc += program[pc].oper - 1;
+                                pc += ((OffsetCommand)program[pc]).offset - 1;
                             }
                             break;
                         }
@@ -151,13 +156,13 @@ namespace VirtualMachine
                         {
                             if (stack.Pop() != 0.0)
                             {
-                                pc += program[pc].oper - 1;
+                                pc += ((OffsetCommand)program[pc]).offset - 1;
                             }
                             break;
                         }
                     case ByteCommand.JMP:
                         {
-                            pc += program[pc].oper - 1;
+                            pc += ((OffsetCommand)program[pc]).offset - 1;
                             break;
                         }
                     case ByteCommand.NONE:

@@ -3,18 +3,27 @@ using System.Collections.Generic;
 
 namespace VirtualMachine
 {
-    public struct Command
+    public class Command
     {
         public ByteCommand command;
-        public Variant oper;
     };
+
+    public class VarCommand : Command
+    {
+        public Variant var;
+    };
+
+    public class OffsetCommand : Command
+    {
+        public int offset;
+    }
 
     class Decoder
     {
         public static readonly Exception bcc = new Exception("byte code corrupted");
 
         private byte[] code;
-        private uint i = 0;
+        private int i = 0;
 
         private List<Command> program = new List<Command>();
 
@@ -32,6 +41,20 @@ namespace VirtualMachine
             }
         }
 
+        private int GetOffset()
+        {
+            if (i + sizeof(int) < code.Length)
+            {
+                int arg = BitConverter.ToInt32(code, i);
+                i += sizeof(int);
+                return arg;
+            }
+            else
+            {
+                throw bcc;
+            }
+        }
+
         public void LoadCode(byte[] _code)
         {
             code = _code;
@@ -41,10 +64,10 @@ namespace VirtualMachine
         {
             while (i < code.Length)
             {
-                Command command = new Command();
-                command.command = (ByteCommand)(code[i++]);
+                Command command;
+                ByteCommand byteCommand = (ByteCommand)code[i++];
 
-                switch(command.command)
+                switch(byteCommand)
                 {
                     case ByteCommand.ADD:
                     case ByteCommand.EQ:
@@ -57,19 +80,25 @@ namespace VirtualMachine
                     case ByteCommand.NONE:
                     case ByteCommand.POP:
                     case ByteCommand.SUB:
+                        command = new Command();
                         break;
                     case ByteCommand.FETCH:
                     case ByteCommand.JMP:
                     case ByteCommand.JNZ:
                     case ByteCommand.JZ:
-                    case ByteCommand.PUSH:
                     case ByteCommand.STORE:
-                        command.oper = GetVar();
+                        command = new OffsetCommand();
+                        ((OffsetCommand)command).offset = GetOffset();
+                        break;
+                    case ByteCommand.PUSH:
+                        command = new VarCommand();
+                        ((VarCommand)command).var = GetVar();
                         break;
                     default:
                         throw bcc;
                 }
 
+                command.command = byteCommand;
                 program.Add(command);
             }
 

@@ -8,9 +8,9 @@ namespace VirtualMachine
     {
         public static readonly ushort size = 8;
         
-        public static Variant FromBytes(byte[] bytes, uint pos)
+        public static Variant FromBytes(byte[] bytes, int pos)
         {
-            return new Variant(BitConverter.ToDouble(bytes, (int)pos));
+            return new Variant(BitConverter.ToDouble(bytes, pos));
         }
 
         [FieldOffset(0)]

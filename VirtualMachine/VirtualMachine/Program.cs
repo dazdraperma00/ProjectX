@@ -33,6 +33,12 @@ namespace VirtualMachine
                     VirtualMachine vm = new VirtualMachine();
                     vm.LoadProgram(program);
                     vm.Run();
+
+                    Variant[] stack = vm.GetStack().ToArray();
+                    for (int i = stack.Length - 1; i >= 0; --i)
+                    {
+                        Console.WriteLine(stack[i]);
+                    }
                 }
             }
             catch(Exception e)
