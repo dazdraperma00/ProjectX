@@ -6,7 +6,7 @@ namespace VirtualMachine
     [StructLayout(LayoutKind.Explicit, Size = 8)]
     public class Variant
     {
-        public static readonly ushort size = 8;
+        public static readonly ushort s_size = 8;
         
         public static Variant FromBytes(byte[] bytes, int pos)
         {
@@ -14,22 +14,22 @@ namespace VirtualMachine
         }
 
         [FieldOffset(0)]
-        private double value;
+        private double m_dValue;
 
-        public Variant(double _value = 0.0)
+        public Variant(double value = 0.0)
         {
-            this.value = _value;
+            m_dValue = value;
         }
 
         public byte[] ToBytes()
         {
-            return BitConverter.GetBytes(value);
+            return BitConverter.GetBytes(m_dValue);
         }
 
         public override string ToString()
         {
             string str = "";
-            str += value.ToString();
+            str += m_dValue.ToString();
             return str;
         }
 
@@ -40,42 +40,42 @@ namespace VirtualMachine
 
         public static Variant operator +(Variant op1, Variant op2)
         {
-            return new Variant(op1.value + op2.value);
+            return new Variant(op1.m_dValue + op2.m_dValue);
         }
 
         public static Variant operator -(Variant op1, Variant op2)
         {
-            return new Variant(op1.value - op2.value);
+            return new Variant(op1.m_dValue - op2.m_dValue);
         }
 
         public static bool operator >(Variant op1, Variant op2)
         {
-            return op1.value > op2.value;
+            return op1.m_dValue > op2.m_dValue;
         }
 
         public static bool operator <(Variant op1, Variant op2)
         {
-            return op1.value < op2.value;
+            return op1.m_dValue < op2.m_dValue;
         }
 
         public static bool operator >=(Variant op1, Variant op2)
         {
-            return op1.value >= op2.value;
+            return op1.m_dValue >= op2.m_dValue;
         }
 
         public static bool operator <=(Variant op1, Variant op2)
         {
-            return op1.value < op2.value;
+            return op1.m_dValue < op2.m_dValue;
         }
 
         public static bool operator ==(Variant op1, Variant op2)
         {
-            return op1.value == op2.value;
+            return op1.m_dValue == op2.m_dValue;
         }
 
         public static bool operator !=(Variant op1, Variant op2)
         {
-            return op1.value != op2.value;
+            return op1.m_dValue != op2.m_dValue;
         }
 
         public static implicit operator Variant(double var)
@@ -85,12 +85,12 @@ namespace VirtualMachine
 
         public static implicit operator double(Variant var)
         {
-            return var.value;
+            return var.m_dValue;
         }
 
         public static implicit operator uint(Variant var)
         {
-            return (uint)(var.value);
+            return (uint)(var.m_dValue);
         }
     }
 }

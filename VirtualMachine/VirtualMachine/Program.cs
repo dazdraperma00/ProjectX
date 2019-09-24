@@ -26,12 +26,8 @@ namespace VirtualMachine
                     byte[] code = new byte[fstream.Length];
                     fstream.Read(code, 0, code.Length);
 
-                    Decoder decoder = new Decoder();
-                    decoder.LoadCode(code);
-                    Command[] program = decoder.Decode();
-
                     VirtualMachine vm = new VirtualMachine();
-                    vm.LoadProgram(program);
+                    vm.LoadProgram(code);
                     vm.Run();
 
                     Variant[] stack = vm.GetStack().ToArray();

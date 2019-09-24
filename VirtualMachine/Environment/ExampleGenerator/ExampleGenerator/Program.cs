@@ -45,6 +45,13 @@ namespace ExampleGenerator
             {
                 switch(words[i++])
                 {
+                    case "CALL":
+                        byteCode.Add((byte)ByteCommand.CALL);
+                        AddOffset(words[i++]);
+                        break;
+                    case "RETURN":
+                        byteCode.Add((byte)ByteCommand.RETURN);
+                        break;
                     case "FETCH":
                         byteCode.Add((byte)ByteCommand.FETCH);
                         AddOffset(words[i++]);
@@ -98,6 +105,9 @@ namespace ExampleGenerator
                         break;
                     case "HALT":
                         byteCode.Add((byte)ByteCommand.HALT);
+                        break;
+                    case "VAX":
+                        byteCode.Add((byte)ByteCommand.VAX);
                         break;
                     default:
                         throw new Exception("unknown command");

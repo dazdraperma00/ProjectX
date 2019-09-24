@@ -7,52 +7,38 @@ namespace VirtualMachine
     {
         private static readonly Exception sof = new Exception("stack overflow");
 
-        private List<Variant> stack = new List<Variant>();
+        private List<Variant> m_stack = new List<Variant>();
+
+        public int GetStackPointer()
+        {
+            return m_stack.Count - 1;
+        }
+
+        public Variant[] ToArray()
+        {
+            return m_stack.ToArray();
+        }
 
         public void Push(Variant var)
         {
-            stack.Add(var);
+            m_stack.Add(var);
         }
 
         public Variant Pop()
         {
-            Variant var = stack[stack.Count - 1];
-            stack.RemoveAt(stack.Count - 1);
+            Variant var = m_stack[m_stack.Count - 1];
+            m_stack.RemoveAt(m_stack.Count - 1);
             return var;
         }
 
         public void Pick(int offset)
         {
-            if (offset < stack.Count)
-            {
-                stack.Add(stack[(int)offset]);
-            }
-            else
-            {
-                throw sof;
-            }
+            m_stack.Add(m_stack[offset]);
         }
 
         public void Set(int offset, Variant var)
         {
-            if (offset < stack.Count)
-            {
-                stack[(int)offset] = var;
-            }
-            else
-            {
-                throw sof;
-            }
-        }
-
-        public int GetStackPointer()
-        {
-            return stack.Count - 1;
-        }
-
-        public Variant[] ToArray()
-        {
-            return stack.ToArray();
+            m_stack[offset] = var;
         }
     }
 }
