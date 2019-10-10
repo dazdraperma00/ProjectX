@@ -21,213 +21,178 @@ namespace VirtualMachine
         JZ,
         JNZ,
         JMP,
-        VAX,
+        LAMBDA,
         HALT,
 
         NONE
     }
 
-    public enum State : byte
+    unsafe class VirtualMachine
     {
-        RUNNING,
-        HALTED,
-        BROKEN,
-    }
-
-    class VirtualMachine
-    {
-        private byte[] m_baProgram;
-        private int m_npc = 0;
-
         private Stack m_stack = new Stack();
-        private int m_nbp = -1;
-        private Variant m_vax = null;
-
-        private State m_state = State.HALTED;
-
-        public void LoadProgram(byte[] program)
-        {
-            m_baProgram = program;
-        }
-
-        public State GetState()
-        {
-            return m_state;
-        }
 
         public Stack GetStack()
         {
             return m_stack;
         }
 
-        private Variant GetVar()
+        private bool Run(byte[] program)
         {
-            Variant arg = Variant.FromBytes(m_baProgram, m_npc);
-            m_npc += Variant.s_size;
-            return arg;
-        }
+            byte* ppc;
 
-        private int GetInt()
-        {
-            int arg = BitConverter.ToInt32(m_baProgram, m_npc);
-            m_npc += sizeof(int);
-            return arg;
-        }
-
-        public void Run()
-        {
-            m_state = State.RUNNING;
-
-            while (true)
+            fixed (byte* p = program)
             {
-                switch((ByteCommand)m_baProgram[m_npc++])
+                ppc = p;
+
+                while (true)
                 {
-                    case ByteCommand.CALL:
-                        {
-                            int mark = GetInt();
-                            m_stack.Push(m_npc);
-                            m_npc = mark;
-                            m_stack.Push(m_nbp);
-                            m_nbp = m_stack.GetStackPointer();
-                            break;
-                        }
-                    case ByteCommand.RETURN:
-                        {
-                            m_vax = m_stack.GetStackPointer() != m_nbp ? m_stack.Pop() : null;
-                            m_nbp = (int)m_stack.Pop();
-                            m_npc = (int)m_stack.Pop();
-                            break;
-                        }
-                    case ByteCommand.VAX:
-                        {
-                            m_stack.Push(m_vax);
-                            break;
-                        }
-                    case ByteCommand.FETCH:
-                        {
-                            m_stack.Pick(m_nbp + GetInt());
-                            break;
-                        }
-                    case ByteCommand.STORE:
-                        {
-                            m_stack.Set(m_nbp + GetInt(), m_stack.Pop());
-                            break;
-                        }
-                    case ByteCommand.PUSH:
-                        {
-                            m_stack.Push(GetVar());
-                            break;
-                        }
-                    case ByteCommand.POP:
-                        {
-                            m_stack.Pop();
-                            break;
-                        }
-                    case ByteCommand.ADD:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            m_stack.Push(op1 + op2);
-                            break;
-                        }
-                    case ByteCommand.SUB:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            m_stack.Push(op1 - op2);
-                            break;
-                        }
-                    case ByteCommand.LT:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 < op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.GT:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.LET:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 <= op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.GET:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 >= op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.EQ:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.NEQ:
-                        {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 != op2 ? 1.0 : 0.0);
-                            m_stack.Push(res);
-                            break;
-                        }
-                    case ByteCommand.JZ:
-                        {
-                            if (m_stack.Pop() == 0.0)
+                    switch ((ByteCommand)(*(ppc++)))
+                    {
+                        case ByteCommand.CALL:
                             {
-                                m_npc += GetInt();
+                                int mark = *((int*)ppc++);
+                                m_stack.PushUp(*ppc);
+                                ppc = p + mark;
+                                m_stack.PushUp(m_stack.m_nbp);
+                                m_stack.m_nbp = m_stack.m_nsp;
+                                break;
                             }
-                            else
+                        case ByteCommand.RETURN:
                             {
-                                m_npc += sizeof(int);
+                                m_stack.PushDown(m_stack.m_nsp != m_stack.m_nbp ? m_stack.PopUp() : null);
+                                m_stack.m_nbp = (int)m_stack.PopDown();
+                                byte b = (byte)m_stack.PopDown();
+                                ppc = &b;
+                                break;
                             }
-                            break;
-                        }
-                    case ByteCommand.JNZ:
-                        {
-                            if (m_stack.Pop() != 0.0)
+                        case ByteCommand.FETCH:
                             {
-                                m_npc += GetInt();
+                                m_stack.Pick(m_stack.m_nbp + (*((int*)ppc++)));
+                                break;
                             }
-                            else
+                        case ByteCommand.STORE:
                             {
-                                m_npc += sizeof(int);
+                                m_stack.Set(m_stack.m_nbp + *((int*)ppc++), m_stack.PopUp());
+                                break;
                             }
-                            break;
-                        }
-                    case ByteCommand.JMP:
-                        {
-                            m_npc += GetInt();
-                            break;
-                        }
-                    case ByteCommand.NONE:
-                        {
-                            break;
-                        }
-                    case ByteCommand.HALT:
-                        {
-                            m_state = State.HALTED;
-                            return;
-                        }
-                    default:
-                        {
-                            m_state = State.BROKEN;
-                            return;
-                        }
+                        case ByteCommand.PUSH:
+                            {
+                                m_stack.PushDown(*((Variant*)ppc++));
+                                break;
+                            }
+                        case ByteCommand.POP:
+                            {
+                                m_stack.PopUp();
+                                break;
+                            }
+                        case ByteCommand.ADD:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 + op2);
+                                break;
+                            }
+                        case ByteCommand.SUB:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 - op2);
+                                break;
+                            }
+                        case ByteCommand.LT:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 < op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.GT:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.LET:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 <= op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.GET:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 >= op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.EQ:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.NEQ:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                Variant res = new Variant(op1 != op2 ? 1.0 : 0.0);
+                                m_stack.PushDown(res);
+                                break;
+                            }
+                        case ByteCommand.JZ:
+                            {
+                                if (m_stack.PopUp() == 0.0)
+                                {
+                                    ppc += *((int*)ppc++);
+                                }
+                                else
+                                {
+                                    ppc += 4;
+                                }
+                                break;
+                            }
+                        case ByteCommand.JNZ:
+                            {
+                                if (m_stack.PopUp() != 0.0)
+                                {
+                                    ppc += *((int*)ppc++);
+                                }
+                                else
+                                {
+                                    ppc += 4;
+                                }
+                                break;
+                            }
+                        case ByteCommand.JMP:
+                            {
+                                ppc += *((int*)ppc++);
+                                break;
+                            }
+                        case ByteCommand.LAMBDA:
+                            {
+                                break;
+                            }
+                        case ByteCommand.NONE:
+                            {
+                                break;
+                            }
+                        case ByteCommand.HALT:
+                            {
+                                return true;
+                            }
+                        default:
+                            {
+                                return false;
+                            }
+                    }
                 }
             }
         }

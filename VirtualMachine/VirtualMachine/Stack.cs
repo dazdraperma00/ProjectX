@@ -1,39 +1,65 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace VirtualMachine
 {
     class Stack
     {
-        private static readonly Exception sof = new Exception("stack overflow");
+        private Variant[] m_stack = new Variant[10];
 
-        private List<Variant> m_stack = new List<Variant>();
+        public int m_nsp = 10;
+        public int m_nbp = -1;
 
-        public int GetStackPointer()
+        public void Resize()
         {
-            return m_stack.Count - 1;
+            int inc = m_stack.Length / 2;
+            Variant[] vStack = new Variant[m_stack.Length + inc];
+
+            for (int i = 0; i < m_nbp; ++i)
+            {
+                vStack[i] = m_stack[i];
+            }
+
+            for (int i = m_nsp; i < m_stack.Length - 1; ++i)
+            {
+                vStack[i + inc] = m_stack[i];
+            }
+
+            m_stack = vStack;
         }
 
-        public Variant[] ToArray()
+        public void PushDown(Variant var)
         {
-            return m_stack.ToArray();
+            if (m_nsp - 1 == m_nbp)
+            {
+                Resize();
+            }
+
+            m_stack[--m_nsp] = var;
         }
 
-        public void Push(Variant var)
+        public void PushUp(Variant var)
         {
-            m_stack.Add(var);
+            if (m_nbp + 1 == m_nsp)
+            {
+                Resize();
+            }
+
+            m_stack[++m_nbp] = var;
         }
 
-        public Variant Pop()
+        public Variant PopDown()
         {
-            Variant var = m_stack[m_stack.Count - 1];
-            m_stack.RemoveAt(m_stack.Count - 1);
-            return var;
+            return m_stack[m_nsp++];
+        }
+
+        public Variant PopUp()
+        {
+            return m_stack[m_nbp--];
         }
 
         public void Pick(int offset)
         {
-            m_stack.Add(m_stack[offset]);
+            PushDown(m_stack[offset]);
         }
 
         public void Set(int offset, Variant var)

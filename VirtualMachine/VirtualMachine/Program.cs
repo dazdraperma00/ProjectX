@@ -30,6 +30,19 @@ namespace VirtualMachine
                     vm.LoadProgram(code);
                     vm.Run();
 
+                    switch(vm.GetState())
+                    {
+                        case State.HALTED:
+                            Console.WriteLine("HALTED");
+                            break;
+                        case State.BROKEN:
+                            Console.WriteLine("BROKEN");
+                            break;
+                        case State.RUNNING:
+                            Console.WriteLine("RUNNING");
+                            break;
+                    }
+
                     Variant[] stack = vm.GetStack().ToArray();
                     for (int i = stack.Length - 1; i >= 0; --i)
                     {

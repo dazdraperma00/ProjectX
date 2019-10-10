@@ -109,6 +109,11 @@ namespace ExampleGenerator
                     case "VAX":
                         byteCode.Add((byte)ByteCommand.VAX);
                         break;
+                    case "LAMBDA":
+                        byteCode.Add((byte)ByteCommand.LAMBDA);
+                        AddOffset(words[i++]);
+                        AddOffset(words[i++]);
+                        break;
                     default:
                         throw new Exception("unknown command");
                 }
