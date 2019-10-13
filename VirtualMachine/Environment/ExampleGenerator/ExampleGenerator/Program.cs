@@ -11,11 +11,12 @@ namespace ExampleGenerator
 
         private static void AddVar(string op)
         {
-            Variant var = Variant.Parse(op);
+            AVariant var = AVariant.Parse(op);
             byte[] bytes = var.ToBytes();
 
             for (int i = 0; i < bytes.Length; ++i)
             {
+                Console.WriteLine(bytes[i].ToString());
                 byteCode.Add(bytes[i]);
             }
         }

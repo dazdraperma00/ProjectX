@@ -41,7 +41,7 @@ namespace VirtualMachine
 
         private Stack m_stack = new Stack();
         private int m_nbp = -1;
-        private Variant m_vax = null;
+        private AVariant m_vax = null;
 
         private State m_state = State.HALTED;
 
@@ -60,10 +60,9 @@ namespace VirtualMachine
             return m_stack;
         }
 
-        private Variant GetVar()
+        private AVariant GetVar()
         {
-            Variant arg = Variant.FromBytes(m_baProgram, m_npc);
-            m_npc += Variant.s_size;
+            AVariant arg = AVariant.FromBytes(m_baProgram, ref m_npc);
             return arg;
         }
 
@@ -125,63 +124,63 @@ namespace VirtualMachine
                         }
                     case ByteCommand.ADD:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
                             m_stack.Push(op1 + op2);
                             break;
                         }
                     case ByteCommand.SUB:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
                             m_stack.Push(op1 - op2);
                             break;
                         }
                     case ByteCommand.LT:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 < op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 < op2;
                             m_stack.Push(res);
                             break;
                         }
                     case ByteCommand.GT:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 > op2;
                             m_stack.Push(res);
                             break;
                         }
                     case ByteCommand.LET:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 <= op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 <= op2;
                             m_stack.Push(res);
                             break;
                         }
                     case ByteCommand.GET:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 >= op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 >= op2;
                             m_stack.Push(res);
                             break;
                         }
                     case ByteCommand.EQ:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 == op2;
                             m_stack.Push(res);
                             break;
                         }
                     case ByteCommand.NEQ:
                         {
-                            Variant op2 = m_stack.Pop();
-                            Variant op1 = m_stack.Pop();
-                            Variant res = new Variant(op1 != op2 ? 1.0 : 0.0);
+                            AVariant op2 = m_stack.Pop();
+                            AVariant op1 = m_stack.Pop();
+                            AVariant res = op1 != op2;
                             m_stack.Push(res);
                             break;
                         }
