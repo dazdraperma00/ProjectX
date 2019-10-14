@@ -10,7 +10,7 @@ namespace VirtualMachine
         {
             NUM,
             STRING,
-            ARRAY,
+            LIST,
 
             NONE
         }
@@ -38,14 +38,13 @@ namespace VirtualMachine
             switch(bType)
             {
                 case VarType.NUM:
-                    var = new NVariant(BitConverter.ToDouble(bytes, pos));
-                    pos += sizeof(double);
+                    var = NVariant.FromBytes(bytes, ref pos);
                     break;
                 case VarType.STRING:
-                    int size = BitConverter.ToInt32(bytes, pos);
-                    pos += sizeof(int);
-                    var = new SVariant(Encoding.ASCII.GetString(bytes, pos, size));
-                    pos += size;
+                    var = SVariant.FromBytes(bytes, ref pos);
+                    break;
+                case VarType.LIST:
+                    var = LVariant.FromBytes(bytes, ref pos);
                     break;
             }
 
@@ -62,6 +61,32 @@ namespace VirtualMachine
                 }
 
                 return new SVariant(str.Substring(1, str.Length - 1).Substring(0, str.Length - 2));
+            }
+            else if (str[0] == '\"')
+            {
+                if (str[str.Length - 1] != '\"')
+                {
+                    throw new Exception("string ending error");
+                }
+
+                return new SVariant(str.Substring(1, str.Length - 1).Substring(0, str.Length - 2));
+            }
+            else if (str[0] == '{')
+            {
+                if (str[str.Length - 1] != '}')
+                {
+                    throw new Exception("list ending error");
+                }
+
+                List<AVariant> vars = new List<AVariant>();
+                string[] strVars = str.Substring(1, str.Length - 1).Substring(0, str.Length - 2).Split(',');
+
+                for (int i = 0; i < strVars.Length; ++i)
+                {
+                    vars.Add(AVariant.Parse(strVars[i]));
+                }
+
+                return new LVariant(vars);
             }
             else
             {
@@ -115,9 +140,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 + (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 + (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op1 + (LVariant)op2;
             }
             else
             {
@@ -131,9 +160,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 - (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 - (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op1 - (LVariant)op2;
             }
             else
             {
@@ -147,9 +180,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 < (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 < (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op1 < (LVariant)op2;
             }
             else
             {
@@ -163,9 +200,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 > (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 > (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op1 > (LVariant)op2;
             }
             else
             {
@@ -179,9 +220,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 <= (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 <= (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op2 <= (LVariant)op2;
             }
             else
             {
@@ -195,9 +240,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 >= (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 >= (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op2 >= (LVariant)op2;
             }
             else
             {
@@ -211,9 +260,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 == (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 == (SVariant)op2;
+            }
+            else if (op1 is LVariant && op2 is LVariant)
+            {
+                return (LVariant)op1 == (LVariant)op2;
             }
             else
             {
@@ -227,9 +280,13 @@ namespace VirtualMachine
             {
                 return (NVariant)op1 != (NVariant)op2;
             }
-            else if (op1 is AVariant && op2 is AVariant)
+            else if (op1 is SVariant && op2 is SVariant)
             {
                 return (SVariant)op1 != (SVariant)op2;
+            }
+            else if (op1 is LVariant & op2 is LVariant)
+            {
+                return (LVariant)op1 != (LVariant)op2;
             }
             else
             {
@@ -245,6 +302,14 @@ namespace VirtualMachine
         public NVariant(double value = 0.0)
         {
             m_dValue = value;
+        }
+
+        public static NVariant FromBytes(byte[] bytes, ref int pos)
+        {
+            NVariant var = new NVariant(BitConverter.ToDouble(bytes, pos));
+            pos += sizeof(double);
+
+            return var;
         }
 
         public override byte[] ToBytes()
@@ -263,6 +328,16 @@ namespace VirtualMachine
             string str = "";
             str += m_dValue.ToString();
             return str;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is NVariant)
+            {
+                return ((NVariant)obj).m_dValue == m_dValue; 
+            }
+
+            return false;
         }
 
         public static NVariant operator +(NVariant op1, NVariant op2)
@@ -325,6 +400,17 @@ namespace VirtualMachine
             m_sValue = value;
         }
 
+        public static SVariant FromBytes(byte[] bytes, ref int pos)
+        {
+            int size = BitConverter.ToInt32(bytes, pos);
+            pos += sizeof(int);
+
+            SVariant var = new SVariant(Encoding.ASCII.GetString(bytes, pos, size));
+            pos += size;
+
+            return var;
+        }
+
         public override byte[] ToBytes()
         {
             byte[] b = { (byte)VarType.STRING };
@@ -340,6 +426,16 @@ namespace VirtualMachine
         public override string ToString()
         {
             return m_sValue;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SVariant)
+            {
+                return ((SVariant)obj).m_sValue == m_sValue;
+            }
+
+            return false;
         }
 
         public static SVariant operator +(SVariant op1, SVariant op2)
@@ -392,6 +488,142 @@ namespace VirtualMachine
         public static implicit operator string(SVariant var)
         {
             return var.m_sValue;
+        }
+    }
+
+    public class LVariant : AVariant
+    {
+        private List<AVariant> m_lValue;
+
+        public LVariant(List<AVariant> value)
+        {
+            m_lValue = value;
+        }
+
+        public static LVariant FromBytes(byte[] bytes, ref int pos)
+        {
+            int size = BitConverter.ToInt32(bytes, pos);
+            pos += sizeof(int);
+
+            List<AVariant> var = new List<AVariant>();
+
+            for (int i = 0; i < size; ++i)
+            {
+                var.Add(AVariant.FromBytes(bytes, ref pos));
+            }
+
+            return new LVariant(var);
+        }
+
+        public override byte[] ToBytes()
+        {
+            byte[] b = { (byte)VarType.LIST };
+            byte[] bytes = ConcatBytes(b, BitConverter.GetBytes(m_lValue.Count));
+
+            for (int i = 0; i < m_lValue.Count; ++i)
+            {
+                bytes = ConcatBytes(bytes, m_lValue[i].ToBytes());
+            }
+
+            return bytes;
+        }
+
+        public override int GetSize()
+        {
+            int size = 0;
+
+            for (int i = 0; i < m_lValue.Count; ++i)
+            {
+                size += m_lValue[i].GetSize();
+            }
+
+            return size;
+        }
+
+        public override string ToString()
+        {
+            string str = "";
+
+            for (int i = 0; i < m_lValue.Count; ++i)
+            {
+                str = str + m_lValue[i].ToString() + " ";
+            }
+
+            return str;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is LVariant)
+            {
+                if (((LVariant)obj).m_lValue.Count == m_lValue.Count)
+                {
+                    for (int i = 0; i < m_lValue.Count; ++i)
+                    {
+                        if (!((LVariant)obj).m_lValue[i].Equals(m_lValue[i]))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static LVariant operator +(LVariant op1, LVariant op2)
+        {
+            List<AVariant> res = new List<AVariant>(op1.m_lValue);
+            res.AddRange(op2.m_lValue);
+
+            return new LVariant(res);
+        }
+
+        public static LVariant operator -(LVariant op1, LVariant op2)
+        {
+            List<AVariant> res = new List<AVariant>(op1.m_lValue);
+
+            for (int i = 0; i < op2.m_lValue.Count; ++i)
+            {
+                while (res.Contains(op2.m_lValue[i]))
+                {
+                    res.Remove(op2.m_lValue[i]);
+                }
+            }
+
+            return new LVariant(res);
+        }
+
+        public static bool operator <(LVariant op1, LVariant op2)
+        {
+            return op1.m_lValue.Count < op2.m_lValue.Count;
+        }
+
+        public static bool operator >(LVariant op1, LVariant op2)
+        {
+            return op1.m_lValue.Count > op2.m_lValue.Count;
+        }
+
+        public static bool operator <=(LVariant op1, LVariant op2)
+        {
+            return op1.m_lValue.Count <= op2.m_lValue.Count;
+        }
+
+        public static bool operator >=(LVariant op1, LVariant op2)
+        {
+            return op1.m_lValue.Count >= op2.m_lValue.Count;
+        }
+
+        public static bool operator ==(LVariant op1, LVariant op2)
+        {
+            return op1.m_lValue.Equals(op2.m_lValue);
+        }
+
+        public static bool operator !=(LVariant op1, LVariant op2)
+        {
+            return !op1.m_lValue.Equals(op2.m_lValue);
         }
     }
 }
