@@ -27,20 +27,13 @@ namespace VirtualMachine
                     fstream.Read(code, 0, code.Length);
 
                     VirtualMachine vm = new VirtualMachine();
-                    vm.LoadProgram(code);
-                    vm.Run();
-
-                    switch(vm.GetState())
+                    if (vm.Run(code))
                     {
-                        case State.HALTED:
-                            Console.WriteLine("HALTED");
-                            break;
-                        case State.BROKEN:
-                            Console.WriteLine("BROKEN");
-                            break;
-                        case State.RUNNING:
-                            Console.WriteLine("RUNNING");
-                            break;
+                        Console.WriteLine("succesfull");
+                    }
+                    else
+                    {
+                        Console.WriteLine("broken");
                     }
 
                     Variant[] stack = vm.GetStack().ToArray();

@@ -4,9 +4,11 @@ namespace VirtualMachine
 {
     class Stack
     {
-        private Variant[] m_stack = new Variant[10];
+        private const int nCapacity = 10;
 
-        public int m_nsp = 10;
+        private Variant[] m_stack = new Variant[nCapacity];
+
+        public int m_nsp = nCapacity;
         public int m_nbp = -1;
 
         public void Resize()
@@ -47,24 +49,29 @@ namespace VirtualMachine
             m_stack[++m_nbp] = var;
         }
 
-        public Variant PopDown()
+        public Variant PopUp()
         {
             return m_stack[m_nsp++];
         }
 
-        public Variant PopUp()
+        public Variant PopDown()
         {
             return m_stack[m_nbp--];
         }
 
         public void Pick(int offset)
         {
-            PushDown(m_stack[offset]);
+            PushDown(m_stack[m_stack[m_nbp] - offset]);
         }
 
         public void Set(int offset, Variant var)
         {
-            m_stack[offset] = var;
+            m_stack[m_stack.Length - 1 - offset] = var;
+        }
+
+        public Variant[] ToArray()
+        {
+            return m_stack;
         }
     }
 }

@@ -4,10 +4,8 @@ using System.Runtime.InteropServices;
 namespace VirtualMachine
 {
     [StructLayout(LayoutKind.Explicit, Size = 8)]
-    public class Variant
+    public struct Variant
     {
-        public static readonly ushort s_size = 8;
-        
         public static Variant FromBytes(byte[] bytes, int pos)
         {
             return new Variant(BitConverter.ToDouble(bytes, pos));
@@ -88,9 +86,9 @@ namespace VirtualMachine
             return var.m_dValue;
         }
 
-        public static implicit operator uint(Variant var)
+        public static implicit operator int(Variant var)
         {
-            return (uint)(var.m_dValue);
+            return (int)(var.m_dValue);
         }
     }
 }

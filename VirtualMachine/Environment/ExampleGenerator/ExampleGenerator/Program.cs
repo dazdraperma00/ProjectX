@@ -49,8 +49,11 @@ namespace ExampleGenerator
                         byteCode.Add((byte)ByteCommand.CALL);
                         AddOffset(words[i++]);
                         break;
-                    case "RETURN":
-                        byteCode.Add((byte)ByteCommand.RETURN);
+                    case "RET":
+                        byteCode.Add((byte)ByteCommand.RET);
+                        break;
+                    case "VAX":
+                        byteCode.Add((byte)ByteCommand.VAX);
                         break;
                     case "FETCH":
                         byteCode.Add((byte)ByteCommand.FETCH);
@@ -105,9 +108,6 @@ namespace ExampleGenerator
                         break;
                     case "HALT":
                         byteCode.Add((byte)ByteCommand.HALT);
-                        break;
-                    case "VAX":
-                        byteCode.Add((byte)ByteCommand.VAX);
                         break;
                     case "LAMBDA":
                         byteCode.Add((byte)ByteCommand.LAMBDA);

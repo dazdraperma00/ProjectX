@@ -5,7 +5,8 @@ namespace VirtualMachine
     public enum ByteCommand : byte
     {
         CALL,
-        RETURN,
+        RET,
+        VAX,
         FETCH,
         STORE,
         PUSH,
@@ -36,13 +37,14 @@ namespace VirtualMachine
             return m_stack;
         }
 
-        private bool Run(byte[] program)
+        public bool Run(byte[] program)
         {
-            byte* ppc;
-
             fixed (byte* p = program)
             {
-                ppc = p;
+                byte* ppc = p;
+                Variant vax = 0.0;
+
+                m_stack.PushUp(m_stack.m_nsp);
 
                 while (true)
                 {
@@ -50,34 +52,41 @@ namespace VirtualMachine
                     {
                         case ByteCommand.CALL:
                             {
-                                int mark = *((int*)ppc++);
-                                m_stack.PushUp(*ppc);
+                                int mark = *((int*)ppc);
+                                ppc += sizeof(int);
+                                m_stack.PushUp(ppc - p);
+                                m_stack.PushUp(m_stack.m_nsp);
                                 ppc = p + mark;
-                                m_stack.PushUp(m_stack.m_nbp);
-                                m_stack.m_nbp = m_stack.m_nsp;
                                 break;
                             }
-                        case ByteCommand.RETURN:
+                        case ByteCommand.RET:
                             {
-                                m_stack.PushDown(m_stack.m_nsp != m_stack.m_nbp ? m_stack.PopUp() : null);
-                                m_stack.m_nbp = (int)m_stack.PopDown();
-                                byte b = (byte)m_stack.PopDown();
-                                ppc = &b;
+                                vax = m_stack.m_nsp != m_stack.m_nbp ? m_stack.PopUp() : new Variant(0.0);
+                                m_stack.m_nsp = m_stack.PopDown();
+                                ppc = p + m_stack.PopDown();
+                                break;
+                            }
+                        case ByteCommand.VAX:
+                            {
+                                m_stack.PushDown(vax);
                                 break;
                             }
                         case ByteCommand.FETCH:
                             {
-                                m_stack.Pick(m_stack.m_nbp + (*((int*)ppc++)));
+                                m_stack.Pick(*((int*)ppc));
+                                ppc += sizeof(int);
                                 break;
                             }
                         case ByteCommand.STORE:
                             {
-                                m_stack.Set(m_stack.m_nbp + *((int*)ppc++), m_stack.PopUp());
+                                m_stack.Set(*((int*)ppc), m_stack.PopUp());
+                                ppc += sizeof(int);
                                 break;
                             }
                         case ByteCommand.PUSH:
                             {
-                                m_stack.PushDown(*((Variant*)ppc++));
+                                m_stack.PushDown(*((Variant*)ppc));
+                                ppc += sizeof(Variant);
                                 break;
                             }
                         case ByteCommand.POP:
@@ -151,11 +160,12 @@ namespace VirtualMachine
                             {
                                 if (m_stack.PopUp() == 0.0)
                                 {
-                                    ppc += *((int*)ppc++);
+                                    ppc += *((int*)ppc);
+                                    ppc += sizeof(int);
                                 }
                                 else
                                 {
-                                    ppc += 4;
+                                    ppc += sizeof(int);
                                 }
                                 break;
                             }
@@ -163,17 +173,19 @@ namespace VirtualMachine
                             {
                                 if (m_stack.PopUp() != 0.0)
                                 {
-                                    ppc += *((int*)ppc++);
+                                    ppc += *((int*)ppc);
+                                    ppc += sizeof(int);
                                 }
                                 else
                                 {
-                                    ppc += 4;
+                                    ppc += sizeof(int);
                                 }
                                 break;
                             }
                         case ByteCommand.JMP:
                             {
-                                ppc += *((int*)ppc++);
+                                ppc += *((int*)ppc);
+                                ppc += sizeof(int);
                                 break;
                             }
                         case ByteCommand.LAMBDA:
