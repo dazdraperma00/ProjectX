@@ -42,9 +42,9 @@ namespace VirtualMachine
             fixed (byte* p = program)
             {
                 byte* ppc = p;
-                Variant vax = 0.0;
+                Variant vax = Variant.s_null;
 
-                m_stack.PushUp(m_stack.m_nsp);
+                m_stack.PushUp(new Variant(m_stack.m_nsp));
 
                 while (true)
                 {
@@ -54,16 +54,16 @@ namespace VirtualMachine
                             {
                                 int mark = *((int*)ppc);
                                 ppc += sizeof(int);
-                                m_stack.PushUp(ppc - p);
-                                m_stack.PushUp(m_stack.m_nsp);
+                                m_stack.PushUp(new Variant(ppc - p));
+                                m_stack.PushUp(new Variant(m_stack.m_nsp));
                                 ppc = p + mark;
                                 break;
                             }
                         case ByteCommand.RET:
                             {
                                 vax = m_stack.m_nsp != m_stack.m_nbp ? m_stack.PopUp() : new Variant(0.0);
-                                m_stack.m_nsp = m_stack.PopDown();
-                                ppc = p + m_stack.PopDown();
+                                m_stack.m_nsp = (int)m_stack.PopDown().m_dValue;
+                                ppc = p + (int)m_stack.PopDown().m_dValue;
                                 break;
                             }
                         case ByteCommand.VAX:
@@ -85,8 +85,7 @@ namespace VirtualMachine
                             }
                         case ByteCommand.PUSH:
                             {
-                                m_stack.PushDown(*((Variant*)ppc));
-                                ppc += sizeof(Variant);
+                                m_stack.PushDown(Variant.FromBytes(ref ppc));
                                 break;
                             }
                         case ByteCommand.POP:
@@ -158,7 +157,7 @@ namespace VirtualMachine
                             }
                         case ByteCommand.JZ:
                             {
-                                if (m_stack.PopUp() == 0.0)
+                                if (m_stack.PopUp().m_dValue == 0.0)
                                 {
                                     ppc += *((int*)ppc);
                                     ppc += sizeof(int);
@@ -171,7 +170,7 @@ namespace VirtualMachine
                             }
                         case ByteCommand.JNZ:
                             {
-                                if (m_stack.PopUp() != 0.0)
+                                if (m_stack.PopUp().m_dValue != 0.0)
                                 {
                                     ppc += *((int*)ppc);
                                     ppc += sizeof(int);

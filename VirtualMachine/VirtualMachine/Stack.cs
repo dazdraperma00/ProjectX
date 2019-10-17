@@ -4,11 +4,11 @@ namespace VirtualMachine
 {
     class Stack
     {
-        private const int nCapacity = 10;
+        private const int c_capacity = 16;
 
-        private Variant[] m_stack = new Variant[nCapacity];
+        private Variant[] m_stack = new Variant[c_capacity]; // Do we can initialize array with nulls?
 
-        public int m_nsp = nCapacity;
+        public int m_nsp = c_capacity;
         public int m_nbp = -1;
 
         public void Resize()
@@ -16,15 +16,8 @@ namespace VirtualMachine
             int inc = m_stack.Length / 2;
             Variant[] vStack = new Variant[m_stack.Length + inc];
 
-            for (int i = 0; i < m_nbp; ++i)
-            {
-                vStack[i] = m_stack[i];
-            }
-
-            for (int i = m_nsp; i < m_stack.Length - 1; ++i)
-            {
-                vStack[i + inc] = m_stack[i];
-            }
+            Buffer.BlockCopy(m_stack, 0, vStack, 0, m_nbp);
+            Buffer.BlockCopy(m_stack, m_nsp, vStack, m_nsp + inc, m_stack.Length - 1 - m_nsp);
 
             m_stack = vStack;
         }
@@ -61,7 +54,7 @@ namespace VirtualMachine
 
         public void Pick(int offset)
         {
-            PushDown(m_stack[m_stack[m_nbp] - offset]);
+            PushDown(m_stack[(int)m_stack[m_nbp].m_dValue - offset]);
         }
 
         public void Set(int offset, Variant var)
