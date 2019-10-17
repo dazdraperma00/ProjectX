@@ -1,0 +1,7 @@
+PUSH 24,59
+PUSH 4,12
+ADD
+PUSH 'str'
+PUSH 'ing'
+ADD
+HALT
