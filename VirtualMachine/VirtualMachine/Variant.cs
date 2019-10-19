@@ -150,6 +150,92 @@ namespace VirtualMachine
             }
         }
 
+        public static Variant operator ++(Variant var)
+        {
+            if (var.m_usValue0 != c_null)
+            {
+                ++var.m_dValue;
+                return var;
+            }
+            else
+            {
+                return s_null;
+            }
+        }
+
+        public static Variant operator --(Variant var)
+        {
+            if (var.m_usValue0 != c_null)
+            {
+                --var.m_dValue;
+                return var;
+            }
+            else
+            {
+                return s_null;
+            }
+        }
+
+        public static Variant operator *(Variant op1, Variant op2)
+        {
+            if (op1.m_usValue0 != c_null && op2.m_usValue0 != c_null)
+            {
+                return new Variant(op1.m_dValue * op2.m_dValue);
+            }
+            else
+            {
+                return s_null;
+            }
+        }
+
+        public static Variant operator /(Variant op1, Variant op2)
+        {
+            if (op1.m_usValue0 != c_null && op2.m_usValue0 != c_null)
+            {
+                return new Variant(op1.m_dValue / op2.m_dValue);
+            }
+            else
+            {
+                return s_null;
+            }
+        }
+
+        public static Variant operator &&(Variant op1, Variant op2)
+        {
+            if (op1.m_usValue0 != c_null && op2.m_usValue0 != c_null)
+            {
+                return new Variant((op1.m_dValue != 0 && op2.m_dValue != 0) ? 1.0 : 0.0);
+            }
+            else
+            {
+                return new Variant(0.0);
+            }
+        }
+
+        public static Variant operator ||(Variant op1, Variant op2)
+        {
+            if (op1.m_usValue0 != c_null && op2.m_usValue0 != c_null)
+            {
+                return new Variant((op1.m_dValue != 0 || op2.m_dValue != 0) ? 1.0 : 0.0);
+            }
+            else
+            {
+                return new Variant(0.0);
+            }
+        }
+
+        public static Variant operator !(Variant var)
+        {
+            if (var.m_usValue0 != c_null)
+            {
+                return new Variant(var.m_dValue == 0 ? 1.0 : 0.0);
+            }
+            else
+            {
+                return s_null;
+            }
+        }
+
         public static bool operator <(Variant op1, Variant op2)
         {
             if (op1.m_usValue0 != c_null && op2.m_usValue0 != c_null)

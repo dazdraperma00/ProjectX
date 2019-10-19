@@ -13,6 +13,13 @@ namespace VirtualMachine
         POP,
         ADD,
         SUB,
+        INC,
+        DEC,
+        MULT,
+        DIV,
+        AND,
+        OR,
+        NOT,
         LT,
         GT,
         LET,
@@ -107,6 +114,49 @@ namespace VirtualMachine
                                 Variant op1 = m_stack.PopUp();
                                 m_stack.PushDown(op1 - op2);
                                 break;
+                            }
+                        case ByteCommand.INC:
+                            {
+                                Variant var = m_stack.PopUp();
+                                m_stack.PushDown(++var);
+                                break;
+                            }
+                        case ByteCommand.DEC:
+                            {
+                                Variant var = m_stack.PopUp();
+                                m_stack.PushDown(--var);
+                                break;
+                            }
+                        case ByteCommand.MULT:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 * op2);
+                                break;
+                            }
+                        case ByteCommand.DIV:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 / op2);
+                                break;
+                            }
+                        case ByteCommand.AND:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 && op2);
+                            }
+                        case ByteCommand.OR:
+                            {
+                                Variant op2 = m_stack.PopUp();
+                                Variant op1 = m_stack.PopUp();
+                                m_stack.PushDown(op1 || op2);
+                            }
+                        case ByteCommand.NOT:
+                            {
+                                Variant var = m_stack.PopUp();
+                                m_stack.PushDown(!var);
                             }
                         case ByteCommand.LT:
                             {

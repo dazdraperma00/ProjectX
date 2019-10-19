@@ -76,6 +76,18 @@ namespace ExampleGenerator
                     case "SUB":
                         byteCode.Add((byte)ByteCommand.SUB);
                         break;
+                    case "MULT":
+                        byteCode.Add((byte)ByteCommand.MULT);
+                        break;
+                    case "DIV":
+                        byteCode.Add((byte)ByteCommand.DIV);
+                        break;
+                    case "INC":
+                        byteCode.Add((byte)ByteCommand.INC);
+                        break;
+                    case "DEC":
+                        byteCode.Add((byte)ByteCommand.DEC);
+                        break;
                     case "LT":
                         byteCode.Add((byte)ByteCommand.LT);
                         break;
