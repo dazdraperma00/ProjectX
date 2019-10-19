@@ -88,6 +88,15 @@ namespace ExampleGenerator
                     case "DEC":
                         byteCode.Add((byte)ByteCommand.DEC);
                         break;
+                    case "AND":
+                        byteCode.Add((byte)ByteCommand.AND);
+                        break;
+                    case "OR":
+                        byteCode.Add((byte)ByteCommand.OR);
+                        break;
+                    case "NOT":
+                        byteCode.Add((byte)ByteCommand.NOT);
+                        break;
                     case "LT":
                         byteCode.Add((byte)ByteCommand.LT);
                         break;

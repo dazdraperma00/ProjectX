@@ -105,64 +105,186 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 + op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue + op2.m_dValue);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    char[] resStr = new char[op1.m_nValue1 + op2.m_nValue1];
+
+                                    fixed (char* pStr = resStr)
+                                    {
+                                        int size = sizeof(char) * op1.m_nValue1;
+                                        Buffer.MemoryCopy(op1.m_pValue, pStr, size, size);
+                                        size = sizeof(char) * op2.m_nValue1;
+                                        Buffer.MemoryCopy(op2.m_pValue, (void*)(((char*)pStr) + op1.m_nValue1), size, size);
+                                    }
+
+                                    res = new Variant(resStr);
+                                }
+                                else
+                                {
+                                    res = Variant.s_null;
+                                }
+
+                                m_stack.PushDown(res);
                                 break;
                             }
                         case ByteCommand.SUB:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 - op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue - op2.m_dValue);
+                                }
+                                else
+                                {
+                                    res = Variant.s_null;
+                                }
+
+                                m_stack.PushDown(res);
                                 break;
                             }
                         case ByteCommand.INC:
                             {
-                                Variant var = m_stack.PopUp();
-                                m_stack.PushDown(++var);
+                                if (m_stack.m_stack[m_stack.m_nsp++].m_usValue0 != Variant.c_null)
+                                {
+                                    ++m_stack.m_stack[m_stack.m_nsp++].m_dValue;
+                                }
+                                else
+                                {
+                                    m_stack.m_stack[m_stack.m_nsp++] = Variant.s_null;
+                                }
+
                                 break;
                             }
                         case ByteCommand.DEC:
                             {
-                                Variant var = m_stack.PopUp();
-                                m_stack.PushDown(--var);
+                                if (m_stack.m_stack[m_stack.m_nsp++].m_usValue0 != Variant.c_null)
+                                {
+                                    --m_stack.m_stack[m_stack.m_nsp++].m_dValue;
+                                }
+                                else
+                                {
+                                    m_stack.m_stack[m_stack.m_nsp++] = Variant.s_null;
+                                }
+
                                 break;
                             }
                         case ByteCommand.MULT:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 * op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue * op2.m_dValue);
+                                }
+                                else
+                                {
+                                    res = Variant.s_null;
+                                }
+
+                                m_stack.PushDown(res);
                                 break;
                             }
                         case ByteCommand.DIV:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 / op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null && op2.m_dValue != 0.0)
+                                {
+                                    res = new Variant(op1.m_dValue / op2.m_dValue);
+                                }
+                                else
+                                {
+                                    res = Variant.s_null;
+                                }
+
+                                m_stack.PushDown(res);
                                 break;
                             }
                         case ByteCommand.AND:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 && op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant((op1.m_dValue != 0 && op2.m_dValue != 0) ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
+                                m_stack.PushDown(res);
+                                break;
                             }
                         case ByteCommand.OR:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                m_stack.PushDown(op1 || op2);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant((op1.m_dValue != 0 || op2.m_dValue != 0) ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
+                                m_stack.PushDown(res);
+                                break;
                             }
                         case ByteCommand.NOT:
                             {
                                 Variant var = m_stack.PopUp();
-                                m_stack.PushDown(!var);
+                                Variant res;
+
+                                if (var.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(var.m_dValue == 0 ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = Variant.s_null;
+                                }
+
+                                m_stack.PushDown(res);
+                                break;
                             }
                         case ByteCommand.LT:
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 < op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue < op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    res = new Variant(op1.m_uValue0 < op2.m_uValue0 ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
@@ -170,7 +292,21 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 > op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue > op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    res = new Variant(op1.m_uValue0 > op2.m_uValue0 ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
@@ -178,7 +314,21 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 <= op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue <= op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    res = new Variant(op1.m_uValue0 <= op2.m_uValue0 ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
@@ -186,7 +336,21 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 >= op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue >= op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    res = new Variant(op1.m_uValue0 >= op2.m_uValue0 ? 1.0 : 0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
@@ -194,7 +358,34 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 == op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue == op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    if (op1.m_nValue1 != op2.m_nValue1)
+                                    {
+                                        res = new Variant(0.0);
+                                    }
+
+                                    for (int i = 0; i < op1.m_nValue1; ++i)
+                                    {
+                                        if (((char*)op1.m_pValue)[i] != ((char*)op2.m_pValue)[i])
+                                        {
+                                            res = new Variant(0.0);
+                                        }
+                                    }
+
+                                    res = new Variant(1.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
@@ -202,7 +393,34 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack.PopUp();
                                 Variant op1 = m_stack.PopUp();
-                                Variant res = new Variant(op1 != op2 ? 1.0 : 0.0);
+                                Variant res;
+
+                                if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
+                                {
+                                    res = new Variant(op1.m_dValue != op2.m_dValue ? 1.0 : 0.0);
+                                }
+                                else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
+                                {
+                                    if (op1.m_nValue1 != op2.m_nValue1)
+                                    {
+                                        res = new Variant(1.0);
+                                    }
+
+                                    for (int i = 0; i < op1.m_nValue1; ++i)
+                                    {
+                                        if (((char*)op1.m_pValue)[i] != ((char*)op2.m_pValue)[i])
+                                        {
+                                            res = new Variant(1.0);
+                                        }
+                                    }
+
+                                    res = new Variant(0.0);
+                                }
+                                else
+                                {
+                                    res = new Variant(0.0);
+                                }
+
                                 m_stack.PushDown(res);
                                 break;
                             }
