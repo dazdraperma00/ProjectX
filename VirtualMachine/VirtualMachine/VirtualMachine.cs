@@ -137,11 +137,10 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue + op2.m_dValue);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue + op2.m_dValue;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
@@ -153,34 +152,30 @@ namespace VirtualMachine
                                         Buffer.MemoryCopy(op1.m_pValue, pStr, size, size);
                                         size = sizeof(char) * op2.m_nValue1;
                                         Buffer.MemoryCopy(op2.m_pValue, (void*)(((char*)pStr) + op1.m_nValue1), size, size);
-                                    }
 
-                                    res = new Variant(resStr);
+                                        m_stack[m_nsp].m_nValue1 = resStr.Length;
+                                        m_stack[m_nsp].m_pValue = pStr;
+                                    }
                                 }
                                 else
                                 {
-                                    res = Variant.s_null;
+                                    m_stack[m_nsp] = Variant.s_null;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.SUB:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue - op2.m_dValue);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue - op2.m_dValue;
                                 }
                                 else
                                 {
-                                    res = Variant.s_null;
+                                    m_stack[m_nsp] = Variant.s_null;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.INC:
@@ -213,72 +208,60 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue * op2.m_dValue);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue * op2.m_dValue;
                                 }
                                 else
                                 {
-                                    res = Variant.s_null;
+                                    m_stack[m_nsp] = Variant.s_null;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.DIV:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null && op2.m_dValue != 0.0)
                                 {
-                                    res = new Variant(op1.m_dValue / op2.m_dValue);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue / op2.m_dValue;
                                 }
                                 else
                                 {
-                                    res = Variant.s_null;
+                                    m_stack[m_nsp] = Variant.s_null;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.AND:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant((op1.m_dValue != 0 && op2.m_dValue != 0) ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = (op1.m_dValue != 0.0 && op2.m_dValue != 0.0) ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp] = new Variant(0.0);
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.OR:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant((op1.m_dValue != 0 || op2.m_dValue != 0) ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = (op1.m_dValue != 0.0 || op2.m_dValue != 0.0) ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp] = new Variant(0.0);
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.NOT:
@@ -297,158 +280,140 @@ namespace VirtualMachine
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue < op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue < op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
-                                    res = new Variant(op1.m_uValue0 < op2.m_uValue0 ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_uValue0 < op2.m_uValue0 ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.GT:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue > op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue > op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
-                                    res = new Variant(op1.m_uValue0 > op2.m_uValue0 ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_uValue0 > op2.m_uValue0 ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.LET:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue <= op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue <= op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
-                                    res = new Variant(op1.m_uValue0 <= op2.m_uValue0 ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_uValue0 <= op2.m_uValue0 ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.GET:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue >= op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue >= op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
-                                    res = new Variant(op1.m_uValue0 >= op2.m_uValue0 ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_uValue0 >= op2.m_uValue0 ? 1.0 : 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.EQ:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue == op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue == op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
                                     if (op1.m_nValue1 != op2.m_nValue1)
                                     {
-                                        res = new Variant(0.0);
+                                        m_stack[m_nsp].m_dValue = 0.0;
                                     }
 
                                     for (int i = 0; i < op1.m_nValue1; ++i)
                                     {
                                         if (((char*)op1.m_pValue)[i] != ((char*)op2.m_pValue)[i])
                                         {
-                                            res = new Variant(0.0);
+                                            m_stack[m_nsp].m_dValue = 0.0;
                                         }
                                     }
 
-                                    res = new Variant(1.0);
+                                    m_stack[m_nsp].m_dValue = 1.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.NEQ:
                             {
                                 Variant op2 = m_stack[m_nsp++];
                                 Variant op1 = m_stack[m_nsp];
-                                Variant res;
 
                                 if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null)
                                 {
-                                    res = new Variant(op1.m_dValue != op2.m_dValue ? 1.0 : 0.0);
+                                    m_stack[m_nsp].m_dValue = op1.m_dValue != op2.m_dValue ? 1.0 : 0.0;
                                 }
                                 else if ((Variant.VarType)op1.m_usValue1 == Variant.VarType.STR && (Variant.VarType)op2.m_usValue1 == Variant.VarType.STR)
                                 {
                                     if (op1.m_nValue1 != op2.m_nValue1)
                                     {
-                                        res = new Variant(1.0);
+                                        m_stack[m_nsp].m_dValue = 1.0;
                                     }
 
                                     for (int i = 0; i < op1.m_nValue1; ++i)
                                     {
                                         if (((char*)op1.m_pValue)[i] != ((char*)op2.m_pValue)[i])
                                         {
-                                            res = new Variant(1.0);
+                                            m_stack[m_nsp].m_dValue = 1.0;
                                         }
                                     }
 
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
                                 else
                                 {
-                                    res = new Variant(0.0);
+                                    m_stack[m_nsp].m_dValue = 0.0;
                                 }
-
-                                m_stack[m_nsp] = res;
                                 break;
                             }
                         case ByteCommand.JZ:
