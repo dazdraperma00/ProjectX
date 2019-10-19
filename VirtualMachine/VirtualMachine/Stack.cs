@@ -4,9 +4,9 @@ namespace VirtualMachine
 {
     class Stack
     {
-        private const int c_capacity = 16;
+        public const int c_capacity = 16;
 
-        private Variant[] m_stack = new Variant[c_capacity]; // Do we can initialize array with nulls?
+        public Variant[] m_stack = new Variant[c_capacity]; // Do we can initialize array with nulls? Ask it!
 
         public int m_nsp = c_capacity;
         public int m_nbp = -1;

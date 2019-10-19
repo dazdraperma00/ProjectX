@@ -52,6 +52,7 @@ namespace VirtualMachine
                     {
                         case ByteCommand.CALL:
                             {
+                                //Ask about it
                                 int mark = *((int*)ppc);
                                 ppc += sizeof(int);
                                 m_stack.PushUp(new Variant(ppc - p));
@@ -189,6 +190,14 @@ namespace VirtualMachine
                             }
                         case ByteCommand.LAMBDA:
                             {
+                                //Ask about it
+                                int mark = *((int*)ppc);
+                                ppc += sizeof(int);
+                                int length = *((int*)ppc);
+                                ppc += sizeof(int);
+                                m_stack.PushUp(new Variant(ppc - p));
+                                ppc = p + mark;
+                                m_stack.PushUp(new Variant(ppc + length - p));
                                 break;
                             }
                         case ByteCommand.NONE:
@@ -203,6 +212,12 @@ namespace VirtualMachine
                             {
                                 return false;
                             }
+                    }
+
+                    if (ppc - p == (int)m_stack.m_stack[m_stack.m_nbp].m_dValue)
+                    {
+                        m_stack.PopDown();
+                        ppc = p + (int)m_stack.PopDown().m_dValue;
                     }
                 }
             }
