@@ -17,6 +17,7 @@ namespace VirtualMachine
         DEC,
         MULT,
         DIV,
+        MOD,
         AND,
         OR,
         NOT,
@@ -115,7 +116,7 @@ namespace VirtualMachine
                             }
                         case ByteCommand.STORE:
                             {
-                                m_stack[m_stack.Length - 1 - *((int*)ppc)] = m_stack[m_nsp++];
+                                m_stack[(int)m_stack[m_nbp].m_dValue - *((int*)ppc)] = m_stack[m_nsp++];
                                 ppc += sizeof(int);
                                 break;
                             }
@@ -233,6 +234,23 @@ namespace VirtualMachine
                                     m_stack[m_nsp] = Variant.s_null;
                                 }
                                 break;
+                            }
+                        case ByteCommand.MOD:
+                            {
+                                {
+                                    Variant op2 = m_stack[m_nsp++];
+                                    Variant op1 = m_stack[m_nsp];
+
+                                    if (op1.m_usValue0 != Variant.c_null && op2.m_usValue0 != Variant.c_null && op2.m_dValue != 0.0)
+                                    {
+                                        m_stack[m_nsp].m_dValue = op1.m_dValue % op2.m_dValue;
+                                    }
+                                    else
+                                    {
+                                        m_stack[m_nsp] = Variant.s_null;
+                                    }
+                                    break;
+                                }
                             }
                         case ByteCommand.AND:
                             {
@@ -418,34 +436,17 @@ namespace VirtualMachine
                             }
                         case ByteCommand.JZ:
                             {
-                                if (m_stack[m_nsp++].m_dValue == 0.0)
-                                {
-                                    ppc += *((int*)ppc);
-                                    ppc += sizeof(int);
-                                }
-                                else
-                                {
-                                    ppc += sizeof(int);
-                                }
+                                ppc = m_stack[m_nsp++].m_dValue == 0.0 ? p + *((int*)ppc) : ppc + sizeof(int);
                                 break;
                             }
                         case ByteCommand.JNZ:
                             {
-                                if (m_stack[m_nsp++].m_dValue != 0.0)
-                                {
-                                    ppc += *((int*)ppc);
-                                    ppc += sizeof(int);
-                                }
-                                else
-                                {
-                                    ppc += sizeof(int);
-                                }
+                                ppc = m_stack[m_nsp++].m_dValue != 0.0 ? p + *((int*)ppc) : ppc + sizeof(int);
                                 break;
                             }
                         case ByteCommand.JMP:
                             {
-                                ppc += *((int*)ppc);
-                                ppc += sizeof(int);
+                                ppc = p + *((int*)ppc);
                                 break;
                             }
                         case ByteCommand.LAMBDA:

@@ -27,7 +27,16 @@ namespace VirtualMachine
                     fstream.Read(code, 0, code.Length);
 
                     VirtualMachine vm = new VirtualMachine();
-                    if (vm.Run(code))
+
+                    DateTime tStart = DateTime.Now;
+
+                    bool bSuccess = vm.Run(code);
+
+                    DateTime tEnd = DateTime.Now;
+
+                    Console.WriteLine(tEnd - tStart);
+
+                    if (bSuccess)
                     {
                         Console.WriteLine("succesfull");
                     }
