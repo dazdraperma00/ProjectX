@@ -133,11 +133,6 @@ namespace ExampleGenerator
                     case "HALT":
                         byteCode.Add((byte)ByteCommand.HALT);
                         break;
-                    case "LAMBDA":
-                        byteCode.Add((byte)ByteCommand.LAMBDA);
-                        AddOffset(words[i++]);
-                        AddOffset(words[i++]);
-                        break;
                     default:
                         throw new Exception("unknown command");
                 }
