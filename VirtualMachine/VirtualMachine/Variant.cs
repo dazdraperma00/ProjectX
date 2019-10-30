@@ -110,7 +110,7 @@ namespace VirtualMachine
             m_dValue = var.m_dValue;
         }
 
-        public static readonly Variant s_null = new Variant { m_usValue0 = c_null, m_usValue1 = (ushort)VarType.NULL, m_pValue = null };
+        public static readonly Variant s_null = new Variant { m_usValue0 = c_null, m_pValue = null };
 
         public static Variant Parse(string str)
         {
@@ -178,7 +178,7 @@ namespace VirtualMachine
 
                 return str;
             }
-            else if ((VarType)m_usValue1 == VarType.NULL)
+            else if (m_pValue == null)
             {
                 return "NULL";
             }
@@ -190,7 +190,7 @@ namespace VirtualMachine
         {
             byte[] bytes;
 
-            if (m_usValue0 == c_null && m_usValue1 != (ushort)VarType.NULL)
+            if (m_usValue0 == c_null && m_pValue != null)
             {
                 if (m_usValue1 == (ushort)VarType.STR)
                 {

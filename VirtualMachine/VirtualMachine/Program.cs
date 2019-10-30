@@ -34,7 +34,7 @@ namespace VirtualMachine
 
                     DateTime tEnd = DateTime.Now;
 
-                    Console.WriteLine(tEnd - tStart);
+                    Console.WriteLine((tEnd - tStart).Milliseconds);
 
                     if (bSuccess)
                     {
