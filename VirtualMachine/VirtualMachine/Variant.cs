@@ -18,99 +18,99 @@ namespace VirtualMachine
         }
 
         [FieldOffset(0)]
-        public double m_dValue;
+        public double dValue;
 
         [FieldOffset(0)]
-        public long m_lValue;
+        public long lValue;
 
         [FieldOffset(0)]
-        public ulong m_ulValue;
+        public ulong ulValue;
 
         [FieldOffset(0)]
-        public uint m_uValue0;
+        public uint uValue0;
         [FieldOffset(4)]
-        public uint m_uValue1;
+        public uint uValue1;
 
         [FieldOffset(0)]
-        public int m_nValue0;
+        public int nValue0;
         [FieldOffset(4)]
-        public int m_nValue1;
+        public int nValue1;
 
         [FieldOffset(0)]
-        public ushort m_usValue0;
+        public ushort usValue0;
         [FieldOffset(2)]
-        public ushort m_usValue1;
+        public ushort usValue1;
         [FieldOffset(4)]
-        public ushort m_usValue2;
+        public ushort usValue2;
         [FieldOffset(6)]
-        public ushort m_usValue3;
+        public ushort usValue3;
 
         [FieldOffset(0)]
-        public byte m_bValue0;
+        public byte bValue0;
         [FieldOffset(1)]
-        public byte m_bValue1;
+        public byte bValue1;
         [FieldOffset(2)]
-        public byte m_bValue2;
+        public byte bValue2;
         [FieldOffset(3)]
-        public byte m_bValue3;
+        public byte bValue3;
         [FieldOffset(4)]
-        public byte m_bValue4;
+        public byte bValue4;
         [FieldOffset(5)]
-        public byte m_bValue5;
+        public byte bValue5;
         [FieldOffset(6)]
-        public byte m_bValue6;
+        public byte bValue6;
         [FieldOffset(7)]
-        public byte m_bValue7;
+        public byte bValue7;
 
         [FieldOffset(8)]
-        public void* m_pValue;
+        public void* pValue;
            
         public Variant(double val) : this()
         {
-            m_pValue = null;
-            m_dValue = val;
+            pValue = null;
+            dValue = val;
         }
 
         public Variant(string str) : this()
         {
-            m_usValue0 = c_null;
-            m_usValue1 = (ushort)VarType.STR;
-            m_nValue1 = str.Length;
+            usValue0 = c_null;
+            usValue1 = (ushort)VarType.STR;
+            nValue1 = str.Length;
             fixed (char* cstr = str.ToCharArray())
             {
-                m_pValue = (void*)cstr;
+                pValue = (void*)cstr;
             }
         }
 
         public Variant(char[] str) : this()
         {
-            m_usValue0 = c_null;
-            m_usValue1 = (ushort)VarType.STR;
-            m_nValue1 = str.Length;
+            usValue0 = c_null;
+            usValue1 = (ushort)VarType.STR;
+            nValue1 = str.Length;
             fixed (char* p = str)
             {
-                m_pValue = (void*)p;
+                pValue = (void*)p;
             }
         }
 
         public Variant(Variant[] arr) : this()
         {
-            m_usValue0 = c_null;
-            m_usValue1 = (ushort)VarType.ARR;
-            m_nValue1 = arr.Length;
+            usValue0 = c_null;
+            usValue1 = (ushort)VarType.ARR;
+            nValue1 = arr.Length;
             fixed (Variant* parr = arr)
             {
-                m_pValue = (void*)parr;
+                pValue = (void*)parr;
             }
         }
 
         public Variant(Variant var) : this()
         {
-            m_pValue = var.m_pValue;
-            m_dValue = var.m_dValue;
+            pValue = var.pValue;
+            dValue = var.dValue;
         }
 
-        public static readonly Variant s_null = new Variant { m_usValue0 = c_null, m_pValue = null };
+        public static readonly Variant s_null = new Variant { usValue0 = c_null, pValue = null };
 
         public static Variant Parse(string str)
         {
@@ -159,26 +159,26 @@ namespace VirtualMachine
 
         public override string ToString()
         {
-            if (m_usValue0 != c_null)
+            if (usValue0 != c_null)
             {
-                return m_dValue.ToString();
+                return dValue.ToString();
             }
-            else if ((VarType)m_usValue1 == VarType.STR)
+            else if ((VarType)usValue1 == VarType.STR)
             {
-                return new string((char*)m_pValue);
+                return new string((char*)pValue);
             }
-            else if ((VarType)m_usValue1 == VarType.ARR)
+            else if ((VarType)usValue1 == VarType.ARR)
             {
                 string str = "";
 
-                for (int i = 0; i < m_nValue1; ++i)
+                for (int i = 0; i < nValue1; ++i)
                 {
-                    str = str + ((Variant*)m_pValue)[i].ToString() + "|";
+                    str = str + ((Variant*)pValue)[i].ToString() + "|";
                 }
 
                 return str;
             }
-            else if (m_pValue == null)
+            else if (pValue == null)
             {
                 return "NULL";
             }
@@ -190,24 +190,24 @@ namespace VirtualMachine
         {
             byte[] bytes;
 
-            if (m_usValue0 == c_null && m_pValue != null)
+            if (usValue0 == c_null && pValue != null)
             {
-                if (m_usValue1 == (ushort)VarType.STR)
+                if (usValue1 == (ushort)VarType.STR)
                 {
-                    int strSize = sizeof(char) * m_nValue1;
+                    int strSize = sizeof(char) * nValue1;
                     bytes = new byte[sizeof(double) + strSize];
                     fixed (byte* p = bytes)
                     {
-                        Buffer.MemoryCopy(m_pValue, (void*)((double*)p + 1), strSize, strSize);
+                        Buffer.MemoryCopy(pValue, (void*)((double*)p + 1), strSize, strSize);
                     }
                 }
-                else if (m_usValue1 == (ushort)VarType.ARR)
+                else if (usValue1 == (ushort)VarType.ARR)
                 {
                     int size = sizeof(double);
                     bytes = new byte[size];
-                    for (int i = 0; i < m_nValue1; ++i)
+                    for (int i = 0; i < nValue1; ++i)
                     {
-                        byte[] varBytes = ((Variant*)m_pValue)[i].ToBytes();
+                        byte[] varBytes = ((Variant*)pValue)[i].ToBytes();
                         byte[] buf = bytes;
                         bytes = new byte[size + varBytes.Length];
                         Buffer.BlockCopy(buf, 0, bytes, 0, size);
@@ -223,56 +223,100 @@ namespace VirtualMachine
 
             fixed (byte* p = bytes)
             {
-                *((double*)p) = m_dValue;
+                *((double*)p) = dValue;
             }
 
             return bytes;
         }
 
-        public static Variant FromBytes(ref byte* ppc)
+        public static Variant FromBytes(byte** ppc)
         {
             Variant var = new Variant();
-            var.m_dValue = *((double*)ppc);
-            ppc += sizeof(double);
+            var.dValue = *((double*)*ppc);
+            *ppc += sizeof(double);
             
-            if (var.m_usValue0 == c_null)
+            if (var.usValue0 == c_null)
             {
-                if ((VarType)var.m_usValue1 == VarType.STR)
+                if ((VarType)var.usValue1 == VarType.STR)
                 {
-                    char[] str = new char[var.m_nValue1];
-                    fixed (char* p = str)
+                    fixed (char* str = new char[var.nValue1])
                     {
-                        int strSize = var.m_nValue1 * sizeof(char);
-                        Buffer.MemoryCopy(ppc, p, strSize, strSize);
-                        ppc += strSize;
-                        var.m_pValue = (void*)p;
+                        int strSize = var.nValue1 * sizeof(char);
+                        Buffer.MemoryCopy(*ppc, str, strSize, strSize);
+                        *ppc += strSize;
+                        var.pValue = (void*)str;
                     }
                 }
-                else if ((VarType)var.m_usValue1 == VarType.ARR)
+                else if ((VarType)var.usValue1 == VarType.ARR)
                 {
-                    Variant[] arr = new Variant[var.m_nValue1];
-
-                    for (int i = 0; i < var.m_nValue1; ++i)
+                    fixed (Variant* arr = new Variant[var.nValue1])
                     {
-                        arr[i] = Variant.FromBytes(ref ppc);
-                    }
+                        for (Variant* p = arr; p < arr + var.nValue1; ++p)
+                        {
+                            *p = Variant.FromBytes(ppc);
+                        }
 
-                    fixed (Variant* p = arr)
-                    {
-                        var.m_pValue = (void*)p;
+                        var.pValue = (void*)arr;
                     }
                 }
                 else
                 {
-                    var.m_pValue = null;
+                    var.pValue = null;
                 }
             }
             else
             {
-                var.m_pValue = null;
+                var.pValue = null;
             }
 
             return var;
+        }
+
+        public static bool Equal(Variant* op1, Variant* op2)
+        {
+            if (op1->usValue0 != c_null && op2->usValue0 != c_null)
+            {
+                return op1->dValue == op2->dValue;
+            }
+            else if ((VarType)op1->usValue1 == VarType.STR && (VarType)op2->usValue1 == VarType.STR)
+            {
+
+                if (op1->nValue1 != op2->nValue1)
+                {
+                    return false;
+                }
+
+                for (char* p1 = (char*)op1->pValue, p2 = (char*)op2->pValue; p1 < (char*)op1->pValue + op1->nValue1; ++p1, ++p2)
+                {
+                    if (*p1 != *p2)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else if ((VarType)op1->usValue1 == VarType.ARR && (VarType)op2->usValue1 == VarType.STR)
+            {
+                if (op1->nValue1 != op2->nValue1)
+                {
+                    return false;
+                }
+
+                for (Variant* p1 = (Variant*)op1->pValue, p2 = (Variant*)op2->pValue; p1 < (Variant*)op1->pValue + op1->nValue1; ++p1, ++p2)
+                {
+                    if (!Equal(p1, p2))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
