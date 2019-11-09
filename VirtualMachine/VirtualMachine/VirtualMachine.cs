@@ -11,6 +11,9 @@ namespace VirtualMachine
         LFETCH,
         LSTORE,
         LALLOC,
+        LFREE,
+        ALLOC,
+        FREE,
         PUSH,
         POP,
         ADD,
@@ -46,6 +49,15 @@ namespace VirtualMachine
         private Variant* m_sp;
         private Variant* m_bp;
 
+        public VirtualMachine()
+        {
+            fixed (Variant* pStack = m_stack)
+            {
+                m_bp = pStack - 1;
+                m_sp = pStack + m_stack.Length;
+            }
+        }
+
         private void Resize(Variant* pStack)
         {
             int inc = m_stack.Length >> 1;
@@ -80,13 +92,13 @@ namespace VirtualMachine
                 {
                     fixed (Variant* vp = m_stack)
                     {
-                        switch ((ByteCommand)(*(pc)))
+                        switch ((ByteCommand)(*pc))
                         {
                             case ByteCommand.CALL:
                                 {
                                     int mark = *((int*)pc);
                                     pc += sizeof(int);
-                                    if (m_bp + 2 == m_sp)
+                                    if (m_bp + 2 >= m_sp)
                                     {
                                         Resize(vp);
                                         continue;
@@ -98,10 +110,6 @@ namespace VirtualMachine
                             case ByteCommand.RET:
                                 {
                                     pc = p + (int)((m_bp--)->dValue);
-                                    while (m_bp != m_bp - (int)(m_bp--)->dValue)
-                                    {
-                                        (m_bp--)->pValue = null;
-                                    }
                                     break;
                                 }
                             case ByteCommand.FETCH:
@@ -149,6 +157,15 @@ namespace VirtualMachine
                                     }
                                     m_bp += size + 1;
                                     m_bp->dValue = size;
+                                    break;
+                                }
+                            case ByteCommand.LFREE:
+                                {
+                                    Variant* bp = m_bp - (int)(m_bp--)->dValue;
+                                    while (m_bp > bp)
+                                    {
+                                        (m_bp--)->pValue = null;
+                                    }
                                     break;
                                 }
                             case ByteCommand.PUSH:
@@ -358,9 +375,9 @@ namespace VirtualMachine
                                     return false;
                                 }
                         }
-                    }
 
-                    ++pc;
+                        ++pc;
+                    }
                 }
             }
         }

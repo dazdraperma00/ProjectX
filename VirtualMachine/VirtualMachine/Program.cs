@@ -10,7 +10,7 @@ namespace VirtualMachine
         {
             if (args.Length == 0)
             {
-                throw new Exception("exprcted file name");
+                throw new Exception("expected file name");
             }
 
             string ext = Path.GetExtension(args[0]);
