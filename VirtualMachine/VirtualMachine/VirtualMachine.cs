@@ -92,17 +92,18 @@ namespace VirtualMachine
                 {
                     fixed (Variant* vp = m_stack)
                     {
-                        switch ((ByteCommand)(*pc))
+                        switch ((ByteCommand)(*pc++))
                         {
                             case ByteCommand.CALL:
                                 {
                                     int mark = *((int*)pc);
-                                    pc += sizeof(int);
                                     if (m_bp + 2 >= m_sp)
                                     {
                                         Resize(vp);
+                                        --pc;
                                         continue;
                                     }
+                                    pc += sizeof(int);
                                     (++m_bp)->dValue = pc - p;
                                     pc = p + mark;
                                     break;
@@ -117,6 +118,7 @@ namespace VirtualMachine
                                     if (m_sp - 1 == m_bp)
                                     {
                                         Resize(vp);
+                                        --pc;
                                         continue;
                                     }
                                     *(--m_sp) = *(vp + m_stack.Length - *((int*)pc));
@@ -134,6 +136,7 @@ namespace VirtualMachine
                                     if (m_sp - 1 == m_bp)
                                     {
                                         Resize(vp);
+                                        --pc;
                                         continue;
                                     }
                                     *(--m_sp) = *(m_bp - *((int*)pc));
@@ -149,19 +152,20 @@ namespace VirtualMachine
                             case ByteCommand.LALLOC:
                                 {
                                     int size = *((int*)pc);
-                                    pc += sizeof(int);
                                     if (m_bp + size + 1 >= m_sp)
                                     {
                                         Resize(vp);
+                                        --pc;
                                         continue;
                                     }
+                                    pc += sizeof(int);
                                     m_bp += size + 1;
                                     m_bp->dValue = size;
                                     break;
                                 }
                             case ByteCommand.LFREE:
                                 {
-                                    Variant* bp = m_bp - (int)(m_bp--)->dValue;
+                                    Variant* bp = m_bp - 1 - (int)(m_bp--)->dValue;
                                     while (m_bp > bp)
                                     {
                                         (m_bp--)->pValue = null;
@@ -375,8 +379,6 @@ namespace VirtualMachine
                                     return false;
                                 }
                         }
-
-                        ++pc;
                     }
                 }
             }
