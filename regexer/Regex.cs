@@ -10,16 +10,19 @@ namespace regexer {
 
         private Token _root;
 
+        private TemplateStorage Storage;
+
 
         /** Compiles the pattern into a regular expression.
          * 
          *  \param pattern The pattern to compile.
          */
-        public Regex( string pattern ) {
+        public Regex( string pattern) {
             this.Pattern = pattern;
+            this.Storage = new TemplateStorage();
 
             try {
-                this._root = Token.Tokenize( pattern );
+                this._root = Token.Tokenize( pattern, this.Storage);
             }
             catch ( ParsingException ) {
                 throw;
@@ -162,7 +165,7 @@ namespace regexer {
 
 
         public static RegexMatch Match( string pattern, string input ) {
-            return new Regex( pattern ).Match( input );
+            return new Regex(pattern).Match( input );
         }
 
         public static bool IsMatch( string pattern, string input ) {

@@ -79,8 +79,11 @@ namespace regexer {
             int matches = 0, start = cursor;
             while ( matches <= MaxOccurrences ) {
 
-                if ( matches >= MinOccurrences )
+                if ( matches >= MinOccurrences ) { 
                     _backtrackingPoints.Push( cursor );
+                    if (IsLazy)
+                        return true;
+                }
 
                 if ( Target.Matches( input, ref cursor ) ) {
                     matches += 1;
@@ -105,7 +108,8 @@ namespace regexer {
             cursor = _backtrackingPoints.Pop( );
 
             // greedy quantifiers have already matched the input, they just need to go back
-            if ( !IsLazy ) return true;
+            //if ( !IsLazy )
+                return true;
 
             // lazy quantifiers need to match one more time (if possible)
             if ( Target.Matches( input, ref cursor ) ) {
@@ -176,8 +180,8 @@ namespace regexer {
          *  \returns The string representation of this token.
          */
         protected override string printContent( ) {
-            return string.Format( "min: {0}\nmax: {1}\ntarget: {2}", MinOccurrences,
-                MaxOccurrences == int.MaxValue ? "-" : MaxOccurrences.ToString( ), Target );
+            return string.Format( "type: {0}\nmin: {1}\nmax: {2}\ntarget: {3}", IsLazy ? "Lazy": "Greedy", MinOccurrences,
+                MaxOccurrences == int.MaxValue ? "-" : MaxOccurrences.ToString( ), Target );;
         }
     }
 }

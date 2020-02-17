@@ -16,31 +16,52 @@ namespace regexer {
 
         public List<Token> Alternatives { get; set; }   ///< List of alternatives; only one needs to appear in the input.
 
+        // For "backtracking", example: pattern = @"a(bc|b|x)cc", input = "abccaxc".
+        public int _start;
+        public Stack<Token> Stash { get; set; }
+
         /** Creates a new OrToken.
          */
         public OrToken( )
             : base( TokenType.Or, "|" ) {
 
             Alternatives = new List<Token>( );
+
         }
 
 
         public override bool Matches( string input, ref int cursor ) {
-            int start = cursor;
+            _start = cursor;
+            Stash = new Stack<Token>();
 
-            for ( int i = 0 ; i < Alternatives.Count; i++ ) {
-                Token t = Alternatives[ i ];
-
-                if ( t.Matches( input, ref cursor ) )
-                    return true;
-                else cursor = start;
+            for (int i = Alternatives.Count - 1; i >= 0; i--)
+            {
+                Stash.Push(Alternatives[i]);
             }
 
+            //Stash.Push
+            while (Stash.Any())
+            {
+                if (Stash.Pop().Matches(input, ref cursor))
+                    return true;
+            }
+
+            cursor = _start;
             return false;
         }
 
 
         public override bool CanBacktrack( string input, ref int cursor ) {
+            int cur_cursor = cursor;
+
+            cursor = _start;
+            while (Stash.Any())
+            {
+                if (Stash.Pop().Matches(input, ref cursor))
+                    return true;
+            }
+
+            cursor = cur_cursor;
             return false;
         }
 

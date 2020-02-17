@@ -14,9 +14,9 @@ namespace regexer {
          *  \param pattern Regex pattern.
          *  \return The root of the tree.
          */
-        public static Token Tokenize( string pattern ) {
+        public static Token Tokenize( string pattern, TemplateStorage storage) {
             try {
-                IEnumerable<Token> tokens = findTokens( pattern );
+                IEnumerable<Token> tokens = findTokens( pattern, storage);
                 GroupToken root = regroupTokens( tokens );
                 return convertOrs( root );
             }
@@ -37,7 +37,7 @@ namespace regexer {
          *  \param pattern The regex pattern.
          *  \return A sequence of tokens.
          */
-        private static IEnumerable<Token> findTokens( string pattern ) {
+        private static IEnumerable<Token> findTokens( string pattern, TemplateStorage storage ) {
             int tokenStart;
             TokenType type;
 
@@ -102,15 +102,56 @@ namespace regexer {
                         break;
 
                     case '{':
-                        tokenStart = i;
-                        while ( pattern[ i ] != '}' )
-                            i += 1;
 
-                        // lazy?
-                        if ( i < pattern.Length - 2 && pattern[ i + 1 ] == '?' )
-                            i += 1;
+                        if (pattern[++i] == '?')
+                        {
+                            // Template declaration
+                            if (pattern[++i] != '=')
+                            {
+                                string key;
+                                string value;
+                                int keyStart = i;
 
-                        yield return new Token( TokenType.Quantifier, pattern.Substring( tokenStart, i - tokenStart + 1 ) );
+                                while (pattern[++i] != '=') ;
+                                key = pattern.Substring(keyStart, i - keyStart);
+
+                                int valueStart = i + 1;
+
+                                while (pattern[++i] != '}')
+                                {
+                                    // To skip template definition
+                                    if (pattern[i] == '{')
+                                    {
+                                        while (pattern[++i] != '}');
+                                    }
+                                }
+                                value = pattern.Substring(valueStart, i - valueStart);
+
+                                storage.Set(key, value);              
+                            }
+                            // Template definition
+                            else
+                            {
+                                int textStart;
+
+                                textStart = ++i;
+
+                                while (pattern[++i] != '}') ;
+
+                                yield return new TemplateToken(pattern.Substring(textStart, i - textStart), storage);
+                            }
+                        }
+                        else { 
+                            tokenStart = i;
+                            while ( pattern[ i ] != '}' )
+                                i += 1;
+
+                            // lazy?
+                            if ( i < pattern.Length - 2 && pattern[ i + 1 ] == '?' )
+                                i += 1;
+
+                            yield return new Token( TokenType.Quantifier, pattern.Substring( tokenStart, i - tokenStart + 1 ) );
+                        }
                         break;
 
                     case '|':

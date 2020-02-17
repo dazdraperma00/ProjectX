@@ -29,6 +29,7 @@ namespace regexer {
             InputEnd,       ///< This token matches only if the cursor is at the end of the string.
             Lookahead,      ///<
             Lookbehind,     ///<
+            TemplateToken,  ///< 
         }
 
 
